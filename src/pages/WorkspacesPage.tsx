@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { listWorkspaces } from '../lib/entities';
 import WorkspaceBrowser from '../components/workspace/WorkspaceBrowser';
+import NewWorkspaceModal from '../components/workspace/NewWorkspaceModal';
 import type { ContractWorkspace } from '../types/workspace';
 
 export default function WorkspacesPage() {
   const [workspaces, setWorkspaces] = useState<ContractWorkspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     listWorkspaces()
@@ -24,9 +26,20 @@ export default function WorkspacesPage() {
           <h1 className="text-base font-bold text-slate-800">My Workspaces</h1>
           <p className="text-xs text-slate-400">All contract workspaces · click to open</p>
         </div>
-        <button className="bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">+ New Workspace</button>
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          + New Workspace
+        </button>
       </div>
-      <WorkspaceBrowser workspaces={workspaces} />
+      <WorkspaceBrowser workspaces={workspaces} onNew={() => setShowModal(true)} />
+      {showModal && (
+        <NewWorkspaceModal
+          onClose={() => setShowModal(false)}
+          onCreate={ws => setWorkspaces(prev => [ws, ...prev])}
+        />
+      )}
     </div>
   );
 }

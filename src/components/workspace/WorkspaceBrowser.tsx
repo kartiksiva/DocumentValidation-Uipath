@@ -2,9 +2,9 @@ import { useState } from 'react';
 import type { ContractWorkspace } from '../../types/workspace';
 import WorkspaceCard from './WorkspaceCard';
 
-interface Props { workspaces: ContractWorkspace[]; }
+interface Props { workspaces: ContractWorkspace[]; onNew: () => void; }
 
-export default function WorkspaceBrowser({ workspaces }: Props) {
+export default function WorkspaceBrowser({ workspaces, onNew }: Props) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending'>('all');
 
@@ -60,7 +60,7 @@ export default function WorkspaceBrowser({ workspaces }: Props) {
 
       <div className="grid grid-cols-3 gap-3">
         {filtered.map(ws => <WorkspaceCard key={ws.id} workspace={ws} />)}
-        <div className="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 min-h-36 cursor-pointer text-slate-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors">
+        <div onClick={onNew} className="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 min-h-36 cursor-pointer text-slate-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors">
           <span className="text-2xl">📂</span>
           <span className="text-sm font-semibold">New Workspace</span>
         </div>

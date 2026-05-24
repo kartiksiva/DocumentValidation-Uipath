@@ -11,14 +11,14 @@ const mockWorkspace: ContractWorkspace = {
 
 describe('WorkspaceBrowser', () => {
   it('renders workspace card', () => {
-    render(<MemoryRouter><WorkspaceBrowser workspaces={[mockWorkspace]} /></MemoryRouter>);
+    render(<MemoryRouter><WorkspaceBrowser workspaces={[mockWorkspace]} onNew={() => {}} /></MemoryRouter>);
     expect(screen.getByText('Acme MSA')).toBeInTheDocument();
     expect(screen.getByText('Buyer Corp → Acme Ltd')).toBeInTheDocument();
   });
 
   it('filters by search term', () => {
     const ws2 = { ...mockWorkspace, id: 'ws2', name: 'GAFTA Grain', buyerParty: 'TradeA', sellerParty: 'TradeB' };
-    render(<MemoryRouter><WorkspaceBrowser workspaces={[mockWorkspace, ws2]} /></MemoryRouter>);
+    render(<MemoryRouter><WorkspaceBrowser workspaces={[mockWorkspace, ws2]} onNew={() => {}} /></MemoryRouter>);
     fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'GAFTA' } });
     expect(screen.queryByText('Acme MSA')).not.toBeInTheDocument();
     expect(screen.getByText('GAFTA Grain')).toBeInTheDocument();
