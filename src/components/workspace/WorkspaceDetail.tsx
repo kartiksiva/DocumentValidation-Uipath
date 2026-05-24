@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { ContractWorkspace } from '../../types/workspace';
 import type { Template } from '../../types/template';
@@ -15,33 +16,44 @@ interface Props {
 
 export default function WorkspaceDetail({ workspace, templates, onUpdate }: Props) {
   const pending = workspace.comparisons.filter(c => c.status === 'awaiting-review').length;
+  const [error, setError] = useState<string | null>(null);
 
   async function handleUpload(file: File) {
-    const nextVersion = workspace.versions.length + 1;
-    const key = buildBucketKey({ workspaceId: workspace.id, versionNumber: nextVersion, filename: file.name });
-    await uploadFile(key, file);
-    const updated = await updateWorkspace(workspace.id, {
-      versions: [
-        ...workspace.versions,
-        { versionNumber: nextVersion, bucketKey: key, filename: file.name,
-          uploadedBy: 'current-user', uploadedAt: new Date().toISOString(), fileSizeBytes: file.size },
-      ],
-    });
-    onUpdate(updated);
+    setError(null);
+    try {
+      const nextVersion = workspace.versions.length + 1;
+      const key = buildBucketKey({ workspaceId: workspace.id, versionNumber: nextVersion, filename: file.name });
+      await uploadFile(key, file);
+      const updated = await updateWorkspace(workspace.id, {
+        versions: [
+          ...workspace.versions,
+          { versionNumber: nextVersion, bucketKey: key, filename: file.name,
+            uploadedBy: 'current-user', uploadedAt: new Date().toISOString(), fileSizeBytes: file.size },
+        ],
+      });
+      onUpdate(updated);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    }
   }
 
   async function handleComparisonStarted(comparisonId: string) {
-    const newComparison = {
-      comparisonId, docAVersion: workspace.versions.length,
-      docBVersion: Math.max(1, workspace.versions.length - 1),
-      mode: 'buyer-seller-diff' as const, templateId: workspace.defaultTemplateId,
-      includeVersionHistory: false, status: 'running' as const,
-      startedAt: new Date().toISOString(),
-    };
-    const updated = await updateWorkspace(workspace.id, {
-      comparisons: [...workspace.comparisons, newComparison],
-    });
-    onUpdate(updated);
+    setError(null);
+    try {
+      const newComparison = {
+        comparisonId, docAVersion: workspace.versions.length,
+        docBVersion: Math.max(1, workspace.versions.length - 1),
+        mode: 'buyer-seller-diff' as const, templateId: workspace.defaultTemplateId,
+        includeVersionHistory: false, status: 'running' as const,
+        startedAt: new Date().toISOString(),
+      };
+      const updated = await updateWorkspace(workspace.id, {
+        comparisons: [...workspace.comparisons, newComparison],
+      });
+      onUpdate(updated);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to record comparison');
+    }
   }
 
   return (
@@ -73,6 +85,7 @@ export default function WorkspaceDetail({ workspace, templates, onUpdate }: Prop
         <VersionList versions={workspace.versions} onUpload={handleUpload} />
         <RunComparisonForm workspace={workspace} templates={templates} onStarted={handleComparisonStarted} />
       </div>
+      {error && <p className="text-sm text-red-500 px-1">{error}</p>}
 
       <ComparisonHistory workspaceId={workspace.id} comparisons={workspace.comparisons} />
     </div>

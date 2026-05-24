@@ -6,12 +6,17 @@ import type { ContractWorkspace } from '../types/workspace';
 export default function WorkspacesPage() {
   const [workspaces, setWorkspaces] = useState<ContractWorkspace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listWorkspaces().then(ws => { setWorkspaces(ws); setLoading(false); }).catch(console.error);
+    listWorkspaces()
+      .then(ws => setWorkspaces(ws))
+      .catch(e => setError(e instanceof Error ? e.message : 'Failed to load workspaces'))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="p-6 text-slate-500">Loading workspaces…</div>;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
   return (
     <div>
       <div className="px-5 pt-5 pb-3 border-b border-slate-200 flex items-center justify-between">

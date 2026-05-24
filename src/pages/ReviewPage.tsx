@@ -21,8 +21,9 @@ export default function ReviewPage() {
       const ws = await getWorkspace(workspaceId);
       const cmp = ws.comparisons.find(c => c.comparisonId === comparisonId);
       if (!cmp || !isMounted.current) return;
-      const vA = ws.versions.find(v => v.versionNumber === cmp.docAVersion)!;
-      const vB = ws.versions.find(v => v.versionNumber === cmp.docBVersion)!;
+      const vA = ws.versions.find(v => v.versionNumber === cmp.docAVersion);
+      const vB = ws.versions.find(v => v.versionNumber === cmp.docBVersion);
+      if (!vA || !vB || !isMounted.current) return;
       const reviewKey = buildBucketKey({ workspaceId, comparisonId, artifact: 'review.json' });
       const [review, blobA, blobB] = await Promise.all([
         downloadJSON<ReviewPayload>(reviewKey),

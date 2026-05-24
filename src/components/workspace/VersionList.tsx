@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { WorkspaceVersion } from '../../types/workspace';
 
 interface Props {
@@ -8,10 +8,20 @@ interface Props {
 
 export default function VersionList({ versions, onUpload }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    await onUpload(files[0]!);
+    setUploading(true);
+    setError(null);
+    try {
+      await onUpload(files[0]!);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -40,8 +50,9 @@ export default function VersionList({ versions, onUpload }: Props) {
           onClick={() => inputRef.current?.click()}
           className="mt-2 border-2 border-dashed border-slate-200 rounded-lg p-3 text-center text-xs text-slate-400 cursor-pointer hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
         >
-          ⬆ Drop new version or click to upload
+          {uploading ? '⏳ Uploading…' : '⬆ Drop new version or click to upload'}
         </div>
+        {error && <p className="text-xs text-red-500 mt-1 px-1">{error}</p>}
         <input ref={inputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={e => void handleFiles(e.target.files)} />
       </div>
     </div>

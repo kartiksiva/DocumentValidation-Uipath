@@ -29,7 +29,7 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
     try {
       await startComparison({
         workspaceId: workspace.id,
-        bucketName: 'contract-ai',
+        bucketName: 'contract-workspaces',
         docAKey: vA.bucketKey,
         docBKey: vB.bucketKey,
         mode,

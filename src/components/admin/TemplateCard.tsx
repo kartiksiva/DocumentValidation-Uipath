@@ -7,20 +7,31 @@ interface Props { template: Template; guidelines: Guideline[]; onUpdate: (t: Tem
 export default function TemplateCard({ template, guidelines, onUpdate }: Props) {
   const [systemMessage, setSystemMessage] = useState(template.systemMessage);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const linked = guidelines.filter(g => template.linkedGuidelineIds.includes(g.id));
 
   async function handleSave() {
     setSaving(true);
-    const updated = await updateTemplate(template.id, { systemMessage });
-    onUpdate(updated);
-    setSaving(false);
+    setError(null);
+    try {
+      const updated = await updateTemplate(template.id, { systemMessage });
+      onUpdate(updated);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleRemoveGuideline(gId: string) {
-    const updated = await updateTemplate(template.id, {
-      linkedGuidelineIds: template.linkedGuidelineIds.filter(id => id !== gId),
-    });
-    onUpdate(updated);
+    try {
+      const updated = await updateTemplate(template.id, {
+        linkedGuidelineIds: template.linkedGuidelineIds.filter(id => id !== gId),
+      });
+      onUpdate(updated);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to remove guideline');
+    }
   }
 
   return (
@@ -49,6 +60,7 @@ export default function TemplateCard({ template, guidelines, onUpdate }: Props) 
           className="mt-2 text-xs font-semibold bg-purple-600 text-white px-3 py-1.5 rounded-lg disabled:opacity-50">
           {saving ? 'Saving…' : 'Save System Message'}
         </button>
+        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
 
         <div className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-3 mb-1.5">📚 Grounding Documents</div>
         <div className="flex flex-wrap gap-1.5">
