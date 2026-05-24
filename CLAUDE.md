@@ -1,0 +1,128 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Collaboration Model
+
+**Claude Code = Planner + Reviewer** (token-conserving role)
+**GitHub Copilot = Code Builder** (implementation role)
+
+### Claude's responsibilities
+- Read TODO.md to determine next task
+- Assign specific task to Copilot via `.github/copilot-instructions.md` updates
+- Review Copilot's output: type check, test results, architectural correctness, contract compliance
+- Update TODO.md on task completion
+- Flag issues back to Copilot with precise file:line feedback
+- Never implement feature code directly — conserve tokens for planning/review
+
+### Handoff protocol
+1. Claude reads TODO.md → identifies next `[ ]` task
+2. Claude updates "Current Task for Copilot" section in `.github/copilot-instructions.md`
+3. Copilot implements, commits, reports back
+4. Claude reviews (run `npm test`, `npx tsc --noEmit`, read changed files)
+5. Claude marks task `[x]` in TODO.md or sends correction to Copilot
+6. Repeat
+
+### Token budget rule
+Claude reads plan files only to extract the specific task needed. Never read entire plan for orientation — use TODO.md + targeted plan section reads only.
+
+---
+
+## Coding Guidelines (Always Apply)
+
+Derived from Karpathy's LLM coding pitfalls. Non-negotiable for every change.
+
+**Think first:** State assumptions explicitly. If multiple interpretations exist, surface them — don't pick silently. If a simpler approach exists, say so.
+
+**Minimum code:** No features beyond what was asked. No abstractions for single-use code. No error handling for impossible scenarios. If 200 lines could be 50, rewrite.
+
+**Surgical edits:** Touch only what the request requires. Don't improve adjacent code, comments, or formatting. Match existing style. Remove only imports/variables made unused by *your* changes — not pre-existing dead code.
+
+**Verifiable goals:** Transform every task into a checkable outcome before starting:
+- "Add validation" → write failing tests first, then make them pass
+- "Fix bug" → reproduce it in a test, then fix
+- State a brief step→verify plan for multi-step tasks
+
+---
+
+## Project
+
+Contract Comparison Agent — a UiPath Coded App (React + Vite) that lets business users compare legal contracts via an AI pipeline orchestrated by UiPath Maestro. Two implementation projects:
+
+- **Current status + task tracker:** `TODO.md` ← start here
+- **Plan A (Coded App / frontend):** `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
+- **Plan B (Maestro + Agents / backend):** `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md`
+- **Design spec:** `docs/superpowers/specs/2026-05-23-contract-comparison-agent-design.md`
+
+## Commands
+
+> Plan A scaffold not yet built. Once Task 1 of Plan A is complete, commands are:
+
+```bash
+npm run dev          # Vite dev server → http://localhost:5173
+npm run build        # tsc + vite build → dist/
+npm test             # vitest run (all tests)
+npm test -- <path>   # run single test file
+npx tsc --noEmit     # type check only
+```
+
+## Architecture
+
+Five layers (UI-agnostic — swap the Coded App without touching Maestro):
+
+```
+Coded App (React + Vite)           ← Plan A
+  ↕ @uipath/uipath-typescript SDK (browser, no backend)
+UiPath Platform Services
+  Buckets · Entities · MaestroProcesses · Tasks
+  ↕ Maestro SDK
+ContractComparisonProcess          ← Plan B, Main.xaml
+  Mode Router → Template Loader → Agent 1 → Agent 2 → Agent 3 → Human Task
+  ↕ Agent calls (C# Coded Workflows)
+Storage & Knowledge
+  Buckets · Entities · Azure AI Search (RAG) · Assets
+```
+
+## Critical Contracts Between Plan A and Plan B
+
+**Process name** (must be exact string):
+```typescript
+sdk.MaestroProcesses.start({ processName: 'ContractComparisonProcess', ... })
+```
+
+**Bucket path** Plan A downloads review from:
+```
+workspaces/{workspaceId}/comparisons/{comparisonId}/review.json
+```
+
+**`ReviewPayload` schema** (`src/types/review.ts` ↔ Plan B `GenerateReview.cs`):
+- `findings[].deviationType`: `"high-risk" | "medium-risk" | "aligned" | "missing" | "modified" | "extra"`
+- `findings[].snippetA`: exact verbatim text — mark.js uses fuzzy DOM search on this
+- `findings[].insertAfterClause`: only on `missing` findings — UI renders dashed gap here
+- `scorecard[].status`: `"HIGH" | "MEDIUM" | "OK" | "MISSING" | "MODIFIED" | "EXTRA"`
+- `taskId`: populated by Main.xaml after `CreateHumanTask`, before storing `review.json`
+
+## Key SDK Patterns
+
+```typescript
+// Always use the singleton — never `new UiPath()` outside sdk.ts
+import { getSDK } from './lib/sdk';
+const sdk = await getSDK();
+
+// Bucket key builder — use this, never hardcode paths
+import { buildBucketKey } from './lib/buckets';
+
+// Human task polling — 5s interval via useTaskPolling hook
+import { useTaskPolling } from './hooks/useTaskPolling';
+```
+
+## UiPath Assets (Plan B)
+
+All configurable thresholds live in Orchestrator Assets — never hardcode:
+`COMPARATOR_BATCH_SIZE` (default 7), `RAG_TOP_K` (default 5), `DU_HIERARCHY_CONFIDENCE_THRESHOLD` (default 0.75), `RISK_THRESHOLD_HIGH`, `RISK_THRESHOLD_MEDIUM`, `VECTOR_STORE_ENDPOINT`, `VECTOR_STORE_KEY`, `LLM_MODEL`, `LLM_ENDPOINT`.
+
+## Deployment
+
+- Coded App: Cloud-only (UiPath Automation Cloud). Auth via OAuth injected by `@uipath/coded-apps-dev` at deploy time — no custom auth code.
+- `uipath.json` at root: clientId, scopes, organization, tenant, baseUrl. Fill before deploying.
+- Maestro processes publish from UiPath Studio → Orchestrator → deployed as unattended robots.
