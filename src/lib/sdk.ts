@@ -1,10 +1,14 @@
 import { UiPath } from '@uipath/uipath-typescript';
 
-let instance: InstanceType<typeof UiPath> | null = null;
+let initPromise: Promise<InstanceType<typeof UiPath>> | null = null;
 
 export async function getSDK(): Promise<InstanceType<typeof UiPath>> {
-  if (instance) return instance;
-  instance = new UiPath();
-  await instance.initialize();
-  return instance;
+  if (!initPromise) {
+    initPromise = (async () => {
+      const sdk = new UiPath();
+      await sdk.initialize();
+      return sdk;
+    })();
+  }
+  return initPromise;
 }

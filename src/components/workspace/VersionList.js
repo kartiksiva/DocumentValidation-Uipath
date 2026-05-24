@@ -1,0 +1,12 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useRef } from 'react';
+export default function VersionList({ versions, onUpload }) {
+    const inputRef = useRef(null);
+    async function handleFiles(files) {
+        if (!files || files.length === 0)
+            return;
+        await onUpload(files[0]);
+    }
+    return (_jsxs("div", { className: "bg-white border border-slate-200 rounded-xl overflow-hidden", children: [_jsxs("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between", children: [_jsx("span", { className: "text-sm font-bold text-slate-800", children: "\uD83D\uDCC4 Contract Versions" }), _jsx("button", { onClick: () => inputRef.current?.click(), className: "text-xs font-semibold bg-white border border-slate-200 rounded-lg px-3 py-1.5", children: "+ Upload Version" })] }), _jsxs("div", { className: "divide-y divide-slate-100 p-3", children: [[...versions].reverse().map(v => (_jsxs("div", { className: "flex items-center gap-3 py-2.5", children: [_jsxs("span", { className: `text-[11px] font-bold px-2 py-px rounded min-w-[28px] text-center ${v.versionNumber === versions.length ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`, children: ["v", v.versionNumber] }), _jsxs("div", { className: "flex-1 min-w-0", children: [_jsx("div", { className: "text-xs font-semibold text-slate-800 truncate", children: v.filename }), _jsxs("div", { className: "text-[11px] text-slate-400", children: [new Date(v.uploadedAt).toLocaleDateString(), " \u00B7 ", v.uploadedBy, " \u00B7 ", (v.fileSizeBytes / 1024).toFixed(0), " KB"] })] })] }, v.versionNumber))), _jsx("div", { onDragOver: e => e.preventDefault(), onDrop: e => { e.preventDefault(); void handleFiles(e.dataTransfer.files); }, onClick: () => inputRef.current?.click(), className: "mt-2 border-2 border-dashed border-slate-200 rounded-lg p-3 text-center text-xs text-slate-400 cursor-pointer hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors", children: "\u2B06 Drop new version or click to upload" }), _jsx("input", { ref: inputRef, type: "file", accept: ".pdf,.docx", className: "hidden", onChange: e => void handleFiles(e.target.files) })] })] }));
+}
+//# sourceMappingURL=VersionList.js.map

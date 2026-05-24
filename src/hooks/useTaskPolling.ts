@@ -5,6 +5,7 @@ const POLL_INTERVAL_MS = 5000;
 
 export function useTaskPolling() {
   const [tasks, setTasks] = useState<PendingTask[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const poll = useCallback(async () => {
@@ -14,6 +15,8 @@ export function useTaskPolling() {
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to fetch tasks');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -23,5 +26,5 @@ export function useTaskPolling() {
     return () => clearInterval(timer);
   }, [poll]);
 
-  return { tasks, error, refetch: poll };
+  return { tasks, loading, error, refetch: poll };
 }

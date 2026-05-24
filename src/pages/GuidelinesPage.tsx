@@ -12,7 +12,7 @@ export default function GuidelinesPage() {
         <h1 className="text-base font-bold text-slate-800">Guideline Library</h1>
         <p className="text-xs text-slate-400">Upload and manage RAG grounding documents</p>
       </div>
-      <GuidelineLibrary guidelines={guidelines} />
+      <GuidelineLibrary guidelines={guidelines} onAdd={g => setGuidelines(prev => [...prev, g])} />
     </div>
   );
 }

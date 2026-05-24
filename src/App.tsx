@@ -7,6 +7,7 @@ import ReviewPage from './pages/ReviewPage';
 import TemplatesPage from './pages/TemplatesPage';
 import GuidelinesPage from './pages/GuidelinesPage';
 import { initBuckets } from './lib/buckets';
+import ReviewsPage from './pages/ReviewsPage';
 
 export default function App() {
   const [initError, setInitError] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="workspaces" element={<WorkspacesPage />} />
           <Route path="workspaces/:workspaceId" element={<WorkspaceDetailPage />} />
           <Route path="workspaces/:workspaceId/comparisons/:comparisonId" element={<ReviewPage />} />
+          <Route path="reviews" element={<ReviewsPage />} />
           <Route path="admin/templates" element={<TemplatesPage />} />
           <Route path="admin/guidelines" element={<GuidelinesPage />} />
         </Route>

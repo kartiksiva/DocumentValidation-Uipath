@@ -19,7 +19,8 @@ export default function TemplatesPage() {
         <button className="bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">+ New Template</button>
       </div>
       <TemplateManager templates={templates} guidelines={guidelines}
-        onUpdate={t => setTemplates(prev => prev.map(p => p.id === t.id ? t : p))} />
+        onUpdate={t => setTemplates(prev => prev.map(p => p.id === t.id ? t : p))}
+        onCreate={t => setTemplates(prev => [...prev, t])} />
     </div>
   );
 }
