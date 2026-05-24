@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "6826dfaf-03f5-4d52-b507-928d95103613",
+            "uniqueId": "76f398c9-9343-460d-b75f-732dd0e014fe",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -226,8 +226,22 @@
                         "metadata": {}
                     },
                     {
-                        "id": "extract",
-                        "name": "extract",
+                        "id": "download_docs",
+                        "name": "download_docs",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "extract_clauses",
+                        "name": "extract_clauses",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "cleanup",
+                        "name": "cleanup",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -243,11 +257,21 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "extract",
+                        "target": "download_docs",
                         "label": null
                     },
                     {
-                        "source": "extract",
+                        "source": "download_docs",
+                        "target": "extract_clauses",
+                        "label": null
+                    },
+                    {
+                        "source": "extract_clauses",
+                        "target": "cleanup",
+                        "label": null
+                    },
+                    {
+                        "source": "cleanup",
                         "target": "__end__",
                         "label": null
                     }

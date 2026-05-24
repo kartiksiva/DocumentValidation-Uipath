@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "681ca205-ac15-461c-a8b9-decf1d8fc630",
+            "uniqueId": "540c8a1d-7227-4cec-a2e6-c69213b784c9",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -222,8 +222,8 @@
                         "metadata": {}
                     },
                     {
-                        "id": "compare",
-                        "name": "compare",
+                        "id": "compare_clauses",
+                        "name": "compare_clauses",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -239,11 +239,11 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "compare",
+                        "target": "compare_clauses",
                         "label": null
                     },
                     {
-                        "source": "compare",
+                        "source": "compare_clauses",
                         "target": "__end__",
                         "label": null
                     }

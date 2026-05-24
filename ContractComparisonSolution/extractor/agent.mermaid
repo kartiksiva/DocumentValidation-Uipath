@@ -2,7 +2,11 @@
 %% Regenerated on every `uipath init`.
 flowchart TB
   __start__(__start__)
-  extract(extract)
+  download_docs(download_docs)
+  extract_clauses(extract_clauses)
+  cleanup(cleanup)
   __end__(__end__)
-  __start__ --> extract
-  extract --> __end__
+  __start__ --> download_docs
+  download_docs --> extract_clauses
+  extract_clauses --> cleanup
+  cleanup --> __end__
