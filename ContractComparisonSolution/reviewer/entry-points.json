@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "61490322-020e-4444-a5a0-5e86255f8721",
+            "uniqueId": "84c63d4b-6d52-4fd4-a334-18b3fa7ed136",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -126,8 +126,36 @@
                         "metadata": {}
                     },
                     {
-                        "id": "review",
-                        "name": "review",
+                        "id": "generate_scorecard",
+                        "name": "generate_scorecard",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "compute_compliance",
+                        "name": "compute_compliance",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "generate_narrative",
+                        "name": "generate_narrative",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "assemble_payload",
+                        "name": "assemble_payload",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "write_to_bucket",
+                        "name": "write_to_bucket",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -143,11 +171,31 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "review",
+                        "target": "generate_scorecard",
                         "label": null
                     },
                     {
-                        "source": "review",
+                        "source": "assemble_payload",
+                        "target": "write_to_bucket",
+                        "label": null
+                    },
+                    {
+                        "source": "compute_compliance",
+                        "target": "generate_narrative",
+                        "label": null
+                    },
+                    {
+                        "source": "generate_narrative",
+                        "target": "assemble_payload",
+                        "label": null
+                    },
+                    {
+                        "source": "generate_scorecard",
+                        "target": "compute_compliance",
+                        "label": null
+                    },
+                    {
+                        "source": "write_to_bucket",
                         "target": "__end__",
                         "label": null
                     }

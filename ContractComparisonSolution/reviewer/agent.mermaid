@@ -2,7 +2,15 @@
 %% Regenerated on every `uipath init`.
 flowchart TB
   __start__(__start__)
-  review(review)
+  generate_scorecard(generate_scorecard)
+  compute_compliance(compute_compliance)
+  generate_narrative(generate_narrative)
+  assemble_payload(assemble_payload)
+  write_to_bucket(write_to_bucket)
   __end__(__end__)
-  __start__ --> review
-  review --> __end__
+  __start__ --> generate_scorecard
+  assemble_payload --> write_to_bucket
+  compute_compliance --> generate_narrative
+  generate_narrative --> assemble_payload
+  generate_scorecard --> compute_compliance
+  write_to_bucket --> __end__
