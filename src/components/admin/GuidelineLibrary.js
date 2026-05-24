@@ -1,6 +1,0 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import GuidelineRow from './GuidelineRow';
-export default function GuidelineLibrary({ guidelines }) {
-    return (_jsxs("div", { className: "p-5 flex flex-col gap-3", children: [_jsx("div", { className: "bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700 leading-relaxed", children: "\uD83D\uDD0D Upload guideline documents (GAFTA, Incoterms, internal policies). Each is extracted, chunked, and indexed into the vector store. Link guidelines to templates in the Template Manager." }), guidelines.map(g => _jsx(GuidelineRow, { guideline: g }, g.id)), _jsxs("div", { className: "border-2 border-dashed border-slate-200 rounded-xl p-5 text-center text-slate-400 cursor-pointer hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors", children: [_jsx("div", { className: "text-xl mb-1", children: "\uD83D\uDCDA" }), _jsx("div", { className: "text-sm font-semibold", children: "Upload Guideline Document" }), _jsx("div", { className: "text-xs", children: "PDF or DOCX \u00B7 auto-extracted, chunked, and indexed for RAG" })] })] }));
-}
-//# sourceMappingURL=GuidelineLibrary.js.map

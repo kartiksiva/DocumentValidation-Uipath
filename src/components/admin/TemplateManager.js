@@ -1,6 +1,0 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import TemplateCard from './TemplateCard';
-export default function TemplateManager({ templates, guidelines, onUpdate }) {
-    return (_jsxs("div", { className: "p-5 flex flex-col gap-3", children: [_jsxs("div", { className: "bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-700 leading-relaxed", children: ["\u2139 Each template has its own ", _jsx("strong", { children: "system message" }), " \u2014 the LLM instruction used when comparing against it. Attach ", _jsx("strong", { children: "guideline documents" }), " (e.g. GAFTA, Incoterms) to ground AI analysis with industry-standard definitions."] }), templates.map(t => _jsx(TemplateCard, { template: t, guidelines: guidelines, onUpdate: onUpdate }, t.id)), _jsxs("div", { className: "border-2 border-dashed border-slate-200 rounded-xl p-5 text-center text-slate-400 cursor-pointer hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors", children: [_jsx("div", { className: "text-xl mb-1", children: "\uD83D\uDCC2" }), _jsx("div", { className: "text-sm font-semibold", children: "Upload New Template" }), _jsx("div", { className: "text-xs", children: "PDF or DOCX \u00B7 then configure system message and guideline links" })] })] }));
-}
-//# sourceMappingURL=TemplateManager.js.map

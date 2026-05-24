@@ -3,3 +3,7 @@ dist/
 .DS_Store
 *.local
 .env
+
+# Compiled output from tsc (not needed, Vite handles builds)
+src/**/*.js
+src/**/*.js.map
