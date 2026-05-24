@@ -40,6 +40,7 @@ Write failing test → run to confirm fail → implement → run to confirm pass
 - **No direct provider imports.** Always use the facade in `src/lib/entities.ts`, never import from `src/lib/entity-providers/` directly.
 - **Process name must be exact string:** `'ContractComparisonProcess'` — never change this.
 - **No custom auth code.** OAuth injected by `@uipath/coded-apps-dev` at deploy time.
+- **schemas.py exists in 5 places** — `ContractComparisonSolution/schemas.py` (canonical) + 4 agent copies. When changing any schema, update the canonical file first then `cp` it to all 4 agent dirs: `extractor/`, `comparator/`, `reviewer/`, `GuidelineIndexerSolution/guideline-indexer/`.
 
 ---
 

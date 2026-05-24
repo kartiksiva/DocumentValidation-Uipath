@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "035bc6e9-a448-4a1d-aaaa-d91174fe0efc",
+            "uniqueId": "61490322-020e-4444-a5a0-5e86255f8721",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -102,133 +102,18 @@
             "output": {
                 "type": "object",
                 "properties": {
-                    "comparisonId": {
-                        "title": "Comparisonid",
+                    "comparison_id": {
+                        "title": "Comparison Id",
                         "type": "string"
                     },
-                    "workspaceId": {
-                        "title": "Workspaceid",
-                        "type": "string"
-                    },
-                    "mode": {
-                        "title": "Mode",
-                        "type": "string"
-                    },
-                    "scorecard": {
-                        "items": {
-                            "properties": {
-                                "name": {
-                                    "title": "Name",
-                                    "type": "string"
-                                },
-                                "status": {
-                                    "enum": [
-                                        "HIGH",
-                                        "MEDIUM",
-                                        "OK",
-                                        "MISSING",
-                                        "MODIFIED",
-                                        "EXTRA"
-                                    ],
-                                    "title": "Status",
-                                    "type": "string"
-                                },
-                                "summary": {
-                                    "title": "Summary",
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "name",
-                                "status",
-                                "summary"
-                            ],
-                            "title": "ScorecardCategory",
-                            "type": "object"
-                        },
-                        "title": "Scorecard",
-                        "type": "array"
-                    },
-                    "compliancePercent": {
-                        "type": "number"
-                    },
-                    "findings": {
-                        "items": {
-                            "properties": {
-                                "id": {
-                                    "title": "Id",
-                                    "type": "string"
-                                },
-                                "clauseRef": {
-                                    "title": "Clauseref",
-                                    "type": "string"
-                                },
-                                "deviationType": {
-                                    "enum": [
-                                        "high-risk",
-                                        "medium-risk",
-                                        "aligned",
-                                        "missing",
-                                        "modified",
-                                        "extra"
-                                    ],
-                                    "title": "Deviationtype",
-                                    "type": "string"
-                                },
-                                "snippetA": {
-                                    "title": "Snippeta",
-                                    "type": "string"
-                                },
-                                "snippetB": {
-                                    "default": "",
-                                    "title": "Snippetb",
-                                    "type": "string"
-                                },
-                                "explanation": {
-                                    "title": "Explanation",
-                                    "type": "string"
-                                },
-                                "guidelineCitation": {
-                                    "default": "",
-                                    "title": "Guidelinecitation",
-                                    "type": "string"
-                                },
-                                "insertAfterClause": {
-                                    "default": "",
-                                    "title": "Insertafterclause",
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "id",
-                                "clauseRef",
-                                "deviationType",
-                                "snippetA",
-                                "explanation"
-                            ],
-                            "title": "Finding",
-                            "type": "object"
-                        },
-                        "title": "Findings",
-                        "type": "array"
-                    },
-                    "narrative": {
-                        "title": "Narrative",
-                        "type": "string"
-                    },
-                    "taskId": {
-                        "default": "",
-                        "title": "Taskid",
+                    "bucket_key": {
+                        "title": "Bucket Key",
                         "type": "string"
                     }
                 },
                 "required": [
-                    "comparisonId",
-                    "workspaceId",
-                    "mode",
-                    "scorecard",
-                    "findings",
-                    "narrative"
+                    "comparison_id",
+                    "bucket_key"
                 ]
             },
             "graph": {

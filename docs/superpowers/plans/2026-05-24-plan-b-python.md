@@ -56,7 +56,7 @@ workspaces/{workspaceId}/comparisons/{comparisonId}/review.json
     "insertAfterClause": "string (optional — missing clauses only)"
   }],
   "narrative": "string",
-  "taskId": "string"
+  "taskId": 0
 }
 ```
 

@@ -80,6 +80,11 @@ class ReviewerInput(BaseModel):
     template_system_message: str
 
 
+class ReviewerOutput(BaseModel):
+    comparison_id: str
+    bucket_key: str  # path to review.json written to bucket
+
+
 # --- Guideline indexer I/O ---
 
 class IndexerInput(BaseModel):
@@ -131,4 +136,4 @@ class ReviewPayload(_CamelModel):
     compliance_percent: Optional[float] = None
     findings: list[Finding]
     narrative: str
-    task_id: str = ""
+    task_id: int = 0
