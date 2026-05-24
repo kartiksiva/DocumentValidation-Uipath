@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import mammoth from 'mammoth';
+import DOMPurify from 'dompurify';
 
 interface Props { blob: Blob; className?: string; }
 
@@ -20,7 +21,7 @@ export default function DocxViewer({ blob, className }: Props) {
   return (
     <div
       className={`prose prose-sm max-w-none p-4 font-serif text-slate-700 ${className ?? ''}`}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
     />
   );
 }

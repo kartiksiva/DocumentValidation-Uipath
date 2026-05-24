@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWorkspace } from '../lib/entities';
 import { downloadFile, downloadJSON, buildBucketKey } from '../lib/buckets';
@@ -16,10 +16,11 @@ export default function ReviewPage() {
 
   useEffect(() => {
     if (!workspaceId || !comparisonId) return;
+    const isMounted = { current: true };
     (async () => {
       const ws = await getWorkspace(workspaceId);
       const cmp = ws.comparisons.find(c => c.comparisonId === comparisonId);
-      if (!cmp) return;
+      if (!cmp || !isMounted.current) return;
       const vA = ws.versions.find(v => v.versionNumber === cmp.docAVersion)!;
       const vB = ws.versions.find(v => v.versionNumber === cmp.docBVersion)!;
       const reviewKey = buildBucketKey({ workspaceId, comparisonId, artifact: 'review.json' });
@@ -28,12 +29,14 @@ export default function ReviewPage() {
         downloadFile(vA.bucketKey),
         downloadFile(vB.bucketKey),
       ]);
+      if (!isMounted.current) return;
       setPayload(review);
       setDocABlob(blobA);
       setDocBBlob(blobB);
       setFilenames([vA.filename, vB.filename]);
       setLoading(false);
     })();
+    return () => { isMounted.current = false; };
   }, [workspaceId, comparisonId]);
 
   if (loading) return <div className="p-6 text-slate-500">Loading review…</div>;

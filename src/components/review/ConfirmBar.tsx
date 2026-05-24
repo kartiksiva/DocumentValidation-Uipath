@@ -11,23 +11,39 @@ export default function ConfirmBar({ payload, onDone }: Props) {
   const [rejectNote, setRejectNote] = useState('');
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const taskId = Number(payload.taskId);
 
   async function handleConfirm() {
     setSubmitting(true);
-    await confirmTask(taskId);
-    onDone();
+    setError(null);
+    try {
+      await confirmTask(taskId);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to confirm task');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleReject() {
     if (!rejectNote.trim()) return;
     setSubmitting(true);
-    await rejectTask(taskId, rejectNote);
-    onDone();
+    setError(null);
+    try {
+      await rejectTask(taskId, rejectNote);
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to reject task');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
-    <div className="border-t border-slate-200 bg-white px-4 py-3 flex items-center gap-3">
+    <div className="border-t border-slate-200 bg-white px-4 py-3 flex flex-col gap-2">
+      <div className="flex items-center gap-3">
       <span className="text-xs text-slate-400 flex-1">Human task · {payload.comparisonId}</span>
       {showRejectInput && (
         <input
@@ -51,6 +67,8 @@ export default function ConfirmBar({ payload, onDone }: Props) {
       >
         Confirm Review ✓
       </button>
+      </div>
+      {error && <p className="text-xs text-red-500 px-1">{error}</p>}
     </div>
   );
 }

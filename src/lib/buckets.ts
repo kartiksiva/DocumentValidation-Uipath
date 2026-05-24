@@ -37,6 +37,7 @@ export async function downloadFile(key: string): Promise<Blob> {
   const sdk = await getSDK();
   const { uri } = await sdk.buckets.getReadUri({ bucketId: _bucketId, folderId: _folderId, path: key });
   const response = await fetch(uri);
+  if (!response.ok) throw new Error(`Download failed: ${response.status} ${response.statusText}`);
   return response.blob();
 }
 
@@ -50,4 +51,27 @@ export async function downloadJSON<T>(key: string): Promise<T> {
   const blob = await downloadFile(key);
   const text = await blob.text();
   return JSON.parse(text) as T;
+}
+
+export async function initBuckets(): Promise<void> {
+  const sdk = await getSDK();
+
+  const { items } = await sdk.buckets.getAll({ filter: "name eq 'contract-workspaces'" });
+  const bucket = items.find(b => b.name === 'contract-workspaces');
+  if (!bucket) throw new Error('contract-workspaces bucket not found');
+
+  const token = sdk.getToken();
+  if (!token) throw new Error('SDK not authenticated');
+
+  const { baseUrl, orgName, tenantName } = sdk.config;
+  const res = await fetch(
+    `${baseUrl}/${orgName}/${tenantName}/orchestrator_/odata/Folders?$filter=Name eq 'Shared'&$select=Id`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) throw new Error(`Folder lookup failed: ${res.status}`);
+  const data = await res.json() as { value: Array<{ Id: number }> };
+  const folderId = data.value[0]?.Id;
+  if (!folderId) throw new Error('Shared folder not found');
+
+  configureBucket(bucket.id, folderId);
 }

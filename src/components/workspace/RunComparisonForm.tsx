@@ -17,6 +17,7 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
   const [docBVersion, setDocBVersion] = useState(Math.max(1, workspace.versions.length - 1));
   const [includeHistory, setIncludeHistory] = useState(false);
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleRun() {
     const vA = workspace.versions.find(v => v.versionNumber === docAVersion);
@@ -24,6 +25,7 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
     if (!vA || !vB) return;
     const comparisonId = uuidv4();
     setRunning(true);
+    setError(null);
     try {
       await startComparison({
         workspaceId: workspace.id,
@@ -36,6 +38,8 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
         comparisonId,
       });
       onStarted(comparisonId);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to start comparison');
     } finally {
       setRunning(false);
     }
@@ -86,6 +90,7 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
             {running ? 'Starting…' : '▶ Run Comparison'}
           </button>
         </div>
+        {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -12,7 +12,9 @@ interface Props { blob: Blob; className?: string; }
 
 export default function PdfViewer({ blob, className }: Props) {
   const [numPages, setNumPages] = useState<number>(0);
-  const url = URL.createObjectURL(blob);
+  const url = useMemo(() => URL.createObjectURL(blob), [blob]);
+
+  useEffect(() => () => URL.revokeObjectURL(url), [url]);
 
   return (
     <div className={`overflow-y-auto ${className ?? ''}`}>
