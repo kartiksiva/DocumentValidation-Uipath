@@ -7,3 +7,4 @@ dist/
 # Compiled output from tsc (not needed, Vite handles builds)
 src/**/*.js
 src/**/*.js.map
+.uipath/

@@ -42,7 +42,7 @@ Reference: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 | `[x]` | **T11** Highlight layer | mark.js fuzzy match on `finding.snippetA`, per-type CSS classes |
 | `[x]` | **T12** Review workspace | `FindingsSidebar`, `ConfirmBar`, `ReviewWorkspace` — full HITL confirm/reject |
 | `[x]` | **T13** Admin screens | `TemplateManager`, `GuidelineLibrary` — upload + CRUD |
-| `[ ]` | **T14** Build + deploy | **Community:** create Supabase tables + set env vars. **Enterprise:** create Data Fabric entity types + add DataFabric scopes. Then `uip codedapp pack/publish/deploy` |
+| `[x]` | **T14** Build + deploy | Deployed to https://kartizpujinj.uipath.host/contractai (Shared folder). Pack: `contractai.1.0.0.nupkg`. Add deployed URL to External App redirect URIs in UiPath Cloud Admin |
 
 ---
 
