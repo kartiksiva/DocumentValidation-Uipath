@@ -1,8 +1,8 @@
 {
   "clientId": "72524b91-bdf6-430a-8c57-1e4178bd5766",
-  "scope": "OR.Buckets OR.Tasks OR.Jobs PIMS DataFabric.Schema.Read DataFabric.Data.Read DataFabric.Data.Write",
+  "scope": "OR.Buckets OR.Tasks OR.Jobs PIMS",
   "orgName": "kartizpujinj",
   "tenantName": "DefaultTenant",
   "baseUrl": "https://cloud.uipath.com",
-  "redirectUri": "http://localhost:5173"
+  "redirectUri": "https://kartizpujinj.uipath.host/contractai"
 }
