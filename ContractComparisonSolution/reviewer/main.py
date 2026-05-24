@@ -149,7 +149,7 @@ async def write_to_bucket(state: ReviewerState) -> dict:
         await sdk.buckets.upload_async(
             name=state.bucket_name,
             blob_file_path=bucket_key,
-            file_path=tmp_path,
+            source_path=tmp_path,
         )
     finally:
         if tmp_path and os.path.exists(tmp_path):
