@@ -7,6 +7,7 @@ import ConfirmBar from './ConfirmBar';
 
 interface Props {
   payload: ReviewPayload;
+  taskId: number | null;
   docABlob: Blob;
   docBBlob: Blob;
   docAFilename: string;
@@ -15,7 +16,7 @@ interface Props {
   onDone: () => void;
 }
 
-export default function ReviewWorkspace({ payload, docABlob, docBBlob, docAFilename, docBFilename, isComplianceMode, onDone }: Props) {
+export default function ReviewWorkspace({ payload, taskId, docABlob, docBBlob, docAFilename, docBFilename, isComplianceMode, onDone }: Props) {
   const [activeFinding, setActiveFinding] = useState<Finding | null>(null);
   const panelARef = useRef<HTMLDivElement>(null);
   const panelBRef = useRef<HTMLDivElement>(null);
@@ -63,7 +64,7 @@ export default function ReviewWorkspace({ payload, docABlob, docBBlob, docAFilen
         </div>
       </div>
 
-      <ConfirmBar payload={payload} onDone={onDone} />
+      <ConfirmBar payload={payload} taskId={taskId} onDone={onDone} />
     </div>
   );
 }

@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "84c63d4b-6d52-4fd4-a334-18b3fa7ed136",
+            "uniqueId": "cb00f32f-389c-4433-a377-5bc0732dce91",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -88,6 +88,11 @@
                     "template_system_message": {
                         "title": "Template System Message",
                         "type": "string"
+                    },
+                    "task_id": {
+                        "default": 0,
+                        "title": "Task Id",
+                        "type": "integer"
                     }
                 },
                 "required": [

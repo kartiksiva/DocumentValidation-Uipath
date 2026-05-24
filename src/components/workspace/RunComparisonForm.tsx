@@ -27,6 +27,7 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
     setRunning(true);
     setError(null);
     try {
+      const tpl = templates.find(t => t.id === templateId);
       await startComparison({
         workspaceId: workspace.id,
         bucketName: 'contract-workspaces',
@@ -34,6 +35,8 @@ export default function RunComparisonForm({ workspace, templates, onStarted }: P
         docBKey: vB.bucketKey,
         mode,
         templateId,
+        templateSystemMessage: tpl?.systemMessage ?? '',
+        linkedGuidelineIds: tpl?.linkedGuidelineIds ?? [],
         includeVersionHistory: includeHistory,
         comparisonId,
       });

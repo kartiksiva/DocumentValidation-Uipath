@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWorkspace } from '../lib/entities';
 import { downloadFile, downloadJSON, buildBucketKey } from '../lib/buckets';
+import { useTaskPolling } from '../hooks/useTaskPolling';
 import ReviewWorkspace from '../components/review/ReviewWorkspace';
 import type { ReviewPayload } from '../types/review';
 
@@ -13,6 +14,12 @@ export default function ReviewPage() {
   const [docBBlob, setDocBBlob] = useState<Blob | null>(null);
   const [filenames, setFilenames] = useState<[string, string]>(['', '']);
   const [loading, setLoading] = useState(true);
+  const { tasks } = useTaskPolling();
+
+  // Find the pending task for this comparison by matching comparisonId in task data
+  const matchedTaskId = tasks.find(
+    t => (t.data as Record<string, unknown> | null)?.comparisonId === comparisonId
+  )?.id ?? null;
 
   useEffect(() => {
     if (!workspaceId || !comparisonId) return;
@@ -46,6 +53,7 @@ export default function ReviewPage() {
   return (
     <ReviewWorkspace
       payload={payload}
+      taskId={matchedTaskId}
       docABlob={docABlob}
       docBBlob={docBBlob}
       docAFilename={filenames[0]}

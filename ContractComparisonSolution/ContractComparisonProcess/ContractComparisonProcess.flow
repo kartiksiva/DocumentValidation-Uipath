@@ -14,9 +14,290 @@
         "entryPointId": "22b168ff-857b-4439-89d2-0faca5b13e51",
         "isDefaultEntryPoint": true
       }
+    },
+    {
+      "id": "extractor",
+      "type": "uipath.core.agent.5aac7787-422a-40b9-94e7-fbc09ba05701",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Extractor",
+        "icon": "coded-agent"
+      },
+      "inputs": {
+        "bucket_name": "=js:$vars.start.output.bucketName",
+        "doc_a_key": "=js:$vars.start.output.docAKey",
+        "doc_b_key": "=js:$vars.start.output.docBKey",
+        "workspace_id": "=js:$vars.start.output.workspaceId",
+        "comparison_id": "=js:$vars.start.output.comparisonId",
+        "include_version_history": "=js:$vars.start.output.includeVersionHistory",
+        "prior_version_keys": "=js:[]"
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the agent",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the agent fails",
+          "source": "=result.Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "comparator",
+      "type": "uipath.core.agent.e8bdcdf7-e581-4bc3-a9b3-628866fac0f0",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Comparator",
+        "icon": "coded-agent"
+      },
+      "inputs": {
+        "doc_a": "=js:$vars.extractor.output.doc_a",
+        "doc_b": "=js:$vars.extractor.output.doc_b",
+        "mode": "=js:$vars.start.output.mode",
+        "template_system_message": "=js:$vars.start.output.templateSystemMessage",
+        "linked_guideline_ids": "=js:$vars.start.output.linkedGuidelineIds",
+        "batch_size": 7
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the agent",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the agent fails",
+          "source": "=result.Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "hitlReview",
+      "type": "uipath.human-in-the-loop",
+      "typeVersion": "1.0",
+      "display": {
+        "label": "Human Review"
+      },
+      "inputs": {
+        "type": "quick",
+        "schema": {
+          "schemaId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "fields": [
+            {
+              "id": "comparisonId",
+              "label": "Comparison ID",
+              "type": "text",
+              "direction": "input",
+              "binding": "vars.start.output.comparisonId"
+            },
+            {
+              "id": "workspaceId",
+              "label": "Workspace ID",
+              "type": "text",
+              "direction": "input",
+              "binding": "vars.start.output.workspaceId"
+            },
+            {
+              "id": "rejectionNote",
+              "label": "Rejection Note",
+              "type": "text",
+              "direction": "output",
+              "variable": "vars.rejectionNote"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "confirm",
+              "name": "Confirm",
+              "type": "string",
+              "isPrimary": true,
+              "action": "Continue"
+            },
+            {
+              "id": "reject",
+              "name": "Reject",
+              "type": "string",
+              "isPrimary": false,
+              "action": "Continue"
+            }
+          ]
+        },
+        "recipient": {
+          "channels": [
+            "Email",
+            "ActionCenter"
+          ],
+          "connections": {},
+          "assignee": {
+            "type": "group"
+          }
+        },
+        "priority": "Medium"
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "Task result data",
+          "source": "=result",
+          "var": "output",
+          "properties": {
+            "rejectionNote": {
+              "type": "string"
+            },
+            "Action": {
+              "type": "string",
+              "enum": [
+                "Confirm",
+                "Reject"
+              ],
+              "default": "Confirm"
+            }
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "Task completion status",
+          "source": "=result.Action",
+          "var": "status",
+          "enum": [
+            "Confirm",
+            "Reject"
+          ],
+          "default": "Confirm"
+        }
+      }
+    },
+    {
+      "id": "reviewer",
+      "type": "uipath.core.agent.2c3317a8-68cc-4167-ba23-f18d2aa922df",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Reviewer",
+        "icon": "coded-agent"
+      },
+      "inputs": {
+        "workspace_id": "=js:$vars.start.output.workspaceId",
+        "comparison_id": "=js:$vars.start.output.comparisonId",
+        "bucket_name": "=js:$vars.start.output.bucketName",
+        "mode": "=js:$vars.start.output.mode",
+        "findings": "=js:$vars.comparator.output.findings",
+        "template_system_message": "=js:$vars.start.output.templateSystemMessage",
+        "task_id": "=js:$vars.hitlReview.output.taskId ?? 0"
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the agent",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the agent fails",
+          "source": "=result.Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "routeDecision",
+      "type": "core.logic.switch",
+      "typeVersion": "1.0",
+      "display": {
+        "label": "Route Decision"
+      },
+      "inputs": {
+        "cases": [
+          {
+            "id": "confirm",
+            "label": "Confirmed",
+            "expression": "$vars.hitlReview.status === 'Confirm'"
+          },
+          {
+            "id": "reject",
+            "label": "Rejected",
+            "expression": "$vars.hitlReview.status === 'Reject'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "endConfirmed",
+      "type": "core.control.end",
+      "typeVersion": "1.0",
+      "display": {
+        "label": "Confirmed"
+      },
+      "inputs": {}
+    },
+    {
+      "id": "endRejected",
+      "type": "core.control.end",
+      "typeVersion": "1.0",
+      "display": {
+        "label": "Rejected"
+      },
+      "inputs": {}
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "start",
+      "sourcePort": "output",
+      "target": "extractor",
+      "targetPort": "input"
+    },
+    {
+      "id": "e2",
+      "source": "extractor",
+      "sourcePort": "output",
+      "target": "comparator",
+      "targetPort": "input"
+    },
+    {
+      "id": "e3",
+      "source": "comparator",
+      "sourcePort": "output",
+      "target": "hitlReview",
+      "targetPort": "input"
+    },
+    {
+      "id": "e4",
+      "source": "hitlReview",
+      "sourcePort": "completed",
+      "target": "reviewer",
+      "targetPort": "input"
+    },
+    {
+      "id": "e5",
+      "source": "reviewer",
+      "sourcePort": "output",
+      "target": "routeDecision",
+      "targetPort": "input"
+    },
+    {
+      "id": "e6",
+      "source": "routeDecision",
+      "sourcePort": "case-confirm",
+      "target": "endConfirmed",
+      "targetPort": "input"
+    },
+    {
+      "id": "e7",
+      "source": "routeDecision",
+      "sourcePort": "case-reject",
+      "target": "endRejected",
+      "targetPort": "input"
+    }
+  ],
   "definitions": [
     {
       "nodeType": "core.trigger.manual",
@@ -76,14 +357,1416 @@
           ]
         }
       }
+    },
+    {
+      "nodeType": "uipath.core.agent.5aac7787-422a-40b9-94e7-fbc09ba05701",
+      "version": "1.0.0",
+      "category": "agent",
+      "runtimeConstraints": {
+        "exclude": [
+          "api-function"
+        ]
+      },
+      "description": "(In-solution) extractor",
+      "tags": [
+        "in-solution",
+        "local"
+      ],
+      "sortOrder": 505,
+      "supportsErrorHandling": true,
+      "display": {
+        "label": "extractor",
+        "icon": "coded-agent"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ]
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "output",
+              "type": "source",
+              "handleType": "output"
+            }
+          ]
+        }
+      ],
+      "toolbarExtensions": {
+        "design": {
+          "actions": [
+            {
+              "id": "open-workflow",
+              "icon": "external-link",
+              "label": "Open"
+            }
+          ]
+        }
+      },
+      "projectId": "2d3fae88-5450-4d1f-ba3a-613a010b6633",
+      "model": {
+        "type": "bpmn:ServiceTask",
+        "serviceType": "Orchestrator.StartAgentJob",
+        "version": "v2",
+        "bindings": {
+          "resource": "process",
+          "resourceSubType": "Agent",
+          "resourceKey": "5aac7787-422a-40b9-94e7-fbc09ba05701",
+          "orchestratorType": "agent",
+          "values": [
+            {
+              "name": "name",
+              "propertyAttribute": "name",
+              "default": "extractor"
+            },
+            {
+              "name": "folderPath",
+              "propertyAttribute": "folderPath",
+              "default": ""
+            }
+          ]
+        },
+        "projectId": "2d3fae88-5450-4d1f-ba3a-613a010b6633",
+        "projectName": "extractor",
+        "context": [
+          {
+            "name": "name",
+            "type": "string",
+            "value": "<bindings.name>"
+          },
+          {
+            "name": "folderPath",
+            "type": "string",
+            "value": "<bindings.folderPath>"
+          },
+          {
+            "name": "_label",
+            "type": "string",
+            "value": "extractor"
+          }
+        ]
+      },
+      "form": {
+        "id": "activity-properties",
+        "title": "Agent",
+        "sections": [
+          {
+            "id": "inputs",
+            "title": "Inputs",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.bucket_name",
+                "type": "text",
+                "label": "bucket_name"
+              },
+              {
+                "name": "inputs.doc_a_key",
+                "type": "text",
+                "label": "doc_a_key"
+              },
+              {
+                "name": "inputs.doc_b_key",
+                "type": "text",
+                "label": "doc_b_key"
+              },
+              {
+                "name": "inputs.workspace_id",
+                "type": "text",
+                "label": "workspace_id"
+              },
+              {
+                "name": "inputs.comparison_id",
+                "type": "text",
+                "label": "comparison_id"
+              },
+              {
+                "name": "inputs.include_version_history",
+                "type": "checkbox",
+                "label": "include_version_history"
+              },
+              {
+                "name": "inputs.prior_version_keys",
+                "type": "custom",
+                "component": "object-editor",
+                "label": "prior_version_keys",
+                "componentProps": {
+                  "schema": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Prior Version Keys",
+                    "type": "array"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {
+          "bucket_name": {
+            "title": "Bucket Name",
+            "type": "string"
+          },
+          "doc_a_key": {
+            "title": "Doc A Key",
+            "type": "string"
+          },
+          "doc_b_key": {
+            "title": "Doc B Key",
+            "type": "string"
+          },
+          "workspace_id": {
+            "title": "Workspace Id",
+            "type": "string"
+          },
+          "comparison_id": {
+            "title": "Comparison Id",
+            "type": "string"
+          },
+          "include_version_history": {
+            "default": false,
+            "title": "Include Version History",
+            "type": "boolean"
+          },
+          "prior_version_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Prior Version Keys",
+            "type": "array"
+          }
+        }
+      },
+      "inputDefaults": {
+        "bucket_name": "",
+        "doc_a_key": "",
+        "doc_b_key": "",
+        "workspace_id": "",
+        "comparison_id": "",
+        "include_version_history": false,
+        "prior_version_keys": null
+      },
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "source": "=this",
+          "var": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "doc_a": {
+                "properties": {
+                  "doc_key": {
+                    "title": "Doc Key",
+                    "type": "string"
+                  },
+                  "clauses": {
+                    "items": {
+                      "properties": {
+                        "clause_ref": {
+                          "title": "Clause Ref",
+                          "type": "string"
+                        },
+                        "heading": {
+                          "title": "Heading",
+                          "type": "string"
+                        },
+                        "text": {
+                          "title": "Text",
+                          "type": "string"
+                        },
+                        "page_number": {
+                          "title": "Page Number",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "clause_ref",
+                        "heading",
+                        "text",
+                        "page_number"
+                      ],
+                      "title": "ClauseBlock",
+                      "type": "object"
+                    },
+                    "title": "Clauses",
+                    "type": "array"
+                  },
+                  "extraction_method": {
+                    "title": "Extraction Method",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "doc_key",
+                  "clauses",
+                  "extraction_method"
+                ],
+                "title": "DocumentClauses",
+                "type": "object"
+              },
+              "doc_b": {
+                "properties": {
+                  "doc_key": {
+                    "title": "Doc Key",
+                    "type": "string"
+                  },
+                  "clauses": {
+                    "items": {
+                      "properties": {
+                        "clause_ref": {
+                          "title": "Clause Ref",
+                          "type": "string"
+                        },
+                        "heading": {
+                          "title": "Heading",
+                          "type": "string"
+                        },
+                        "text": {
+                          "title": "Text",
+                          "type": "string"
+                        },
+                        "page_number": {
+                          "title": "Page Number",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "clause_ref",
+                        "heading",
+                        "text",
+                        "page_number"
+                      ],
+                      "title": "ClauseBlock",
+                      "type": "object"
+                    },
+                    "title": "Clauses",
+                    "type": "array"
+                  },
+                  "extraction_method": {
+                    "title": "Extraction Method",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "doc_key",
+                  "clauses",
+                  "extraction_method"
+                ],
+                "title": "DocumentClauses",
+                "type": "object"
+              },
+              "history": {
+                "items": {
+                  "properties": {
+                    "doc_key": {
+                      "title": "Doc Key",
+                      "type": "string"
+                    },
+                    "clauses": {
+                      "items": {
+                        "properties": {
+                          "clause_ref": {
+                            "title": "Clause Ref",
+                            "type": "string"
+                          },
+                          "heading": {
+                            "title": "Heading",
+                            "type": "string"
+                          },
+                          "text": {
+                            "title": "Text",
+                            "type": "string"
+                          },
+                          "page_number": {
+                            "title": "Page Number",
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "clause_ref",
+                          "heading",
+                          "text",
+                          "page_number"
+                        ],
+                        "title": "ClauseBlock",
+                        "type": "object"
+                      },
+                      "title": "Clauses",
+                      "type": "array"
+                    },
+                    "extraction_method": {
+                      "title": "Extraction Method",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "doc_key",
+                    "clauses",
+                    "extraction_method"
+                  ],
+                  "title": "DocumentClauses",
+                  "type": "object"
+                },
+                "title": "History",
+                "type": "array"
+              }
+            }
+          }
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "source": "=Error",
+          "var": "error",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "debug": {
+        "runtime": "bpmnEngine"
+      }
+    },
+    {
+      "nodeType": "uipath.core.agent.e8bdcdf7-e581-4bc3-a9b3-628866fac0f0",
+      "version": "1.0.0",
+      "category": "agent",
+      "runtimeConstraints": {
+        "exclude": [
+          "api-function"
+        ]
+      },
+      "description": "(In-solution) comparator",
+      "tags": [
+        "in-solution",
+        "local"
+      ],
+      "sortOrder": 505,
+      "supportsErrorHandling": true,
+      "display": {
+        "label": "comparator",
+        "icon": "coded-agent"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ]
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "output",
+              "type": "source",
+              "handleType": "output"
+            }
+          ]
+        }
+      ],
+      "toolbarExtensions": {
+        "design": {
+          "actions": [
+            {
+              "id": "open-workflow",
+              "icon": "external-link",
+              "label": "Open"
+            }
+          ]
+        }
+      },
+      "projectId": "ff2e3156-2f62-49c2-a014-b47216e6d08e",
+      "model": {
+        "type": "bpmn:ServiceTask",
+        "serviceType": "Orchestrator.StartAgentJob",
+        "version": "v2",
+        "bindings": {
+          "resource": "process",
+          "resourceSubType": "Agent",
+          "resourceKey": "e8bdcdf7-e581-4bc3-a9b3-628866fac0f0",
+          "orchestratorType": "agent",
+          "values": [
+            {
+              "name": "name",
+              "propertyAttribute": "name",
+              "default": "comparator"
+            },
+            {
+              "name": "folderPath",
+              "propertyAttribute": "folderPath",
+              "default": ""
+            }
+          ]
+        },
+        "projectId": "ff2e3156-2f62-49c2-a014-b47216e6d08e",
+        "projectName": "comparator",
+        "context": [
+          {
+            "name": "name",
+            "type": "string",
+            "value": "<bindings.name>"
+          },
+          {
+            "name": "folderPath",
+            "type": "string",
+            "value": "<bindings.folderPath>"
+          },
+          {
+            "name": "_label",
+            "type": "string",
+            "value": "comparator"
+          }
+        ]
+      },
+      "form": {
+        "id": "activity-properties",
+        "title": "Agent",
+        "sections": [
+          {
+            "id": "inputs",
+            "title": "Inputs",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.doc_a",
+                "type": "custom",
+                "component": "object-editor",
+                "label": "doc_a",
+                "componentProps": {
+                  "schema": {
+                    "properties": {
+                      "doc_key": {
+                        "title": "Doc Key",
+                        "type": "string"
+                      },
+                      "clauses": {
+                        "items": {
+                          "properties": {
+                            "clause_ref": {
+                              "title": "Clause Ref",
+                              "type": "string"
+                            },
+                            "heading": {
+                              "title": "Heading",
+                              "type": "string"
+                            },
+                            "text": {
+                              "title": "Text",
+                              "type": "string"
+                            },
+                            "page_number": {
+                              "title": "Page Number",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "clause_ref",
+                            "heading",
+                            "text",
+                            "page_number"
+                          ],
+                          "title": "ClauseBlock",
+                          "type": "object"
+                        },
+                        "title": "Clauses",
+                        "type": "array"
+                      },
+                      "extraction_method": {
+                        "title": "Extraction Method",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "doc_key",
+                      "clauses",
+                      "extraction_method"
+                    ],
+                    "title": "DocumentClauses",
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "name": "inputs.doc_b",
+                "type": "custom",
+                "component": "object-editor",
+                "label": "doc_b",
+                "componentProps": {
+                  "schema": {
+                    "properties": {
+                      "doc_key": {
+                        "title": "Doc Key",
+                        "type": "string"
+                      },
+                      "clauses": {
+                        "items": {
+                          "properties": {
+                            "clause_ref": {
+                              "title": "Clause Ref",
+                              "type": "string"
+                            },
+                            "heading": {
+                              "title": "Heading",
+                              "type": "string"
+                            },
+                            "text": {
+                              "title": "Text",
+                              "type": "string"
+                            },
+                            "page_number": {
+                              "title": "Page Number",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "clause_ref",
+                            "heading",
+                            "text",
+                            "page_number"
+                          ],
+                          "title": "ClauseBlock",
+                          "type": "object"
+                        },
+                        "title": "Clauses",
+                        "type": "array"
+                      },
+                      "extraction_method": {
+                        "title": "Extraction Method",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "doc_key",
+                      "clauses",
+                      "extraction_method"
+                    ],
+                    "title": "DocumentClauses",
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "name": "inputs.mode",
+                "type": "text",
+                "label": "mode"
+              },
+              {
+                "name": "inputs.template_system_message",
+                "type": "text",
+                "label": "template_system_message"
+              },
+              {
+                "name": "inputs.linked_guideline_ids",
+                "type": "custom",
+                "component": "object-editor",
+                "label": "linked_guideline_ids",
+                "componentProps": {
+                  "schema": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Linked Guideline Ids",
+                    "type": "array"
+                  }
+                }
+              },
+              {
+                "name": "inputs.batch_size",
+                "type": "number",
+                "label": "batch_size"
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {
+          "doc_a": {
+            "properties": {
+              "doc_key": {
+                "title": "Doc Key",
+                "type": "string"
+              },
+              "clauses": {
+                "items": {
+                  "properties": {
+                    "clause_ref": {
+                      "title": "Clause Ref",
+                      "type": "string"
+                    },
+                    "heading": {
+                      "title": "Heading",
+                      "type": "string"
+                    },
+                    "text": {
+                      "title": "Text",
+                      "type": "string"
+                    },
+                    "page_number": {
+                      "title": "Page Number",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "clause_ref",
+                    "heading",
+                    "text",
+                    "page_number"
+                  ],
+                  "title": "ClauseBlock",
+                  "type": "object"
+                },
+                "title": "Clauses",
+                "type": "array"
+              },
+              "extraction_method": {
+                "title": "Extraction Method",
+                "type": "string"
+              }
+            },
+            "required": [
+              "doc_key",
+              "clauses",
+              "extraction_method"
+            ],
+            "title": "DocumentClauses",
+            "type": "object"
+          },
+          "doc_b": {
+            "properties": {
+              "doc_key": {
+                "title": "Doc Key",
+                "type": "string"
+              },
+              "clauses": {
+                "items": {
+                  "properties": {
+                    "clause_ref": {
+                      "title": "Clause Ref",
+                      "type": "string"
+                    },
+                    "heading": {
+                      "title": "Heading",
+                      "type": "string"
+                    },
+                    "text": {
+                      "title": "Text",
+                      "type": "string"
+                    },
+                    "page_number": {
+                      "title": "Page Number",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "clause_ref",
+                    "heading",
+                    "text",
+                    "page_number"
+                  ],
+                  "title": "ClauseBlock",
+                  "type": "object"
+                },
+                "title": "Clauses",
+                "type": "array"
+              },
+              "extraction_method": {
+                "title": "Extraction Method",
+                "type": "string"
+              }
+            },
+            "required": [
+              "doc_key",
+              "clauses",
+              "extraction_method"
+            ],
+            "title": "DocumentClauses",
+            "type": "object"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "template_system_message": {
+            "title": "Template System Message",
+            "type": "string"
+          },
+          "linked_guideline_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Linked Guideline Ids",
+            "type": "array"
+          },
+          "batch_size": {
+            "default": 7,
+            "title": "Batch Size",
+            "type": "integer"
+          }
+        }
+      },
+      "inputDefaults": {
+        "doc_a": null,
+        "doc_b": null,
+        "mode": "",
+        "template_system_message": "",
+        "linked_guideline_ids": null,
+        "batch_size": 0
+      },
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "source": "=this",
+          "var": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "findings": {
+                "items": {
+                  "properties": {
+                    "id": {
+                      "title": "Id",
+                      "type": "string"
+                    },
+                    "clause_ref": {
+                      "title": "Clause Ref",
+                      "type": "string"
+                    },
+                    "deviation_type": {
+                      "enum": [
+                        "high-risk",
+                        "medium-risk",
+                        "aligned",
+                        "missing",
+                        "modified",
+                        "extra"
+                      ],
+                      "title": "Deviation Type",
+                      "type": "string"
+                    },
+                    "snippet_a": {
+                      "title": "Snippet A",
+                      "type": "string"
+                    },
+                    "snippet_b": {
+                      "default": "",
+                      "title": "Snippet B",
+                      "type": "string"
+                    },
+                    "explanation": {
+                      "title": "Explanation",
+                      "type": "string"
+                    },
+                    "guideline_citation": {
+                      "default": "",
+                      "title": "Guideline Citation",
+                      "type": "string"
+                    },
+                    "insert_after_clause": {
+                      "default": "",
+                      "title": "Insert After Clause",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "clause_ref",
+                    "deviation_type",
+                    "snippet_a",
+                    "explanation"
+                  ],
+                  "title": "RawFinding",
+                  "type": "object"
+                },
+                "title": "Findings",
+                "type": "array"
+              },
+              "mode": {
+                "title": "Mode",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "source": "=Error",
+          "var": "error",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "debug": {
+        "runtime": "bpmnEngine"
+      }
+    },
+    {
+      "nodeType": "uipath.core.agent.2c3317a8-68cc-4167-ba23-f18d2aa922df",
+      "version": "1.0.0",
+      "category": "agent",
+      "runtimeConstraints": {
+        "exclude": [
+          "api-function"
+        ]
+      },
+      "description": "(In-solution) reviewer",
+      "tags": [
+        "in-solution",
+        "local"
+      ],
+      "sortOrder": 505,
+      "supportsErrorHandling": true,
+      "display": {
+        "label": "reviewer",
+        "icon": "coded-agent"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ]
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "output",
+              "type": "source",
+              "handleType": "output"
+            }
+          ]
+        }
+      ],
+      "toolbarExtensions": {
+        "design": {
+          "actions": [
+            {
+              "id": "open-workflow",
+              "icon": "external-link",
+              "label": "Open"
+            }
+          ]
+        }
+      },
+      "projectId": "07d70956-0499-4280-aea8-151a8decedba",
+      "model": {
+        "type": "bpmn:ServiceTask",
+        "serviceType": "Orchestrator.StartAgentJob",
+        "version": "v2",
+        "bindings": {
+          "resource": "process",
+          "resourceSubType": "Agent",
+          "resourceKey": "2c3317a8-68cc-4167-ba23-f18d2aa922df",
+          "orchestratorType": "agent",
+          "values": [
+            {
+              "name": "name",
+              "propertyAttribute": "name",
+              "default": "reviewer"
+            },
+            {
+              "name": "folderPath",
+              "propertyAttribute": "folderPath",
+              "default": ""
+            }
+          ]
+        },
+        "projectId": "07d70956-0499-4280-aea8-151a8decedba",
+        "projectName": "reviewer",
+        "context": [
+          {
+            "name": "name",
+            "type": "string",
+            "value": "<bindings.name>"
+          },
+          {
+            "name": "folderPath",
+            "type": "string",
+            "value": "<bindings.folderPath>"
+          },
+          {
+            "name": "_label",
+            "type": "string",
+            "value": "reviewer"
+          }
+        ]
+      },
+      "form": {
+        "id": "activity-properties",
+        "title": "Agent",
+        "sections": [
+          {
+            "id": "inputs",
+            "title": "Inputs",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.workspace_id",
+                "type": "text",
+                "label": "workspace_id"
+              },
+              {
+                "name": "inputs.comparison_id",
+                "type": "text",
+                "label": "comparison_id"
+              },
+              {
+                "name": "inputs.bucket_name",
+                "type": "text",
+                "label": "bucket_name"
+              },
+              {
+                "name": "inputs.mode",
+                "type": "text",
+                "label": "mode"
+              },
+              {
+                "name": "inputs.findings",
+                "type": "custom",
+                "component": "object-editor",
+                "label": "findings",
+                "componentProps": {
+                  "schema": {
+                    "items": {
+                      "properties": {
+                        "id": {
+                          "title": "Id",
+                          "type": "string"
+                        },
+                        "clause_ref": {
+                          "title": "Clause Ref",
+                          "type": "string"
+                        },
+                        "deviation_type": {
+                          "enum": [
+                            "high-risk",
+                            "medium-risk",
+                            "aligned",
+                            "missing",
+                            "modified",
+                            "extra"
+                          ],
+                          "title": "Deviation Type",
+                          "type": "string"
+                        },
+                        "snippet_a": {
+                          "title": "Snippet A",
+                          "type": "string"
+                        },
+                        "snippet_b": {
+                          "default": "",
+                          "title": "Snippet B",
+                          "type": "string"
+                        },
+                        "explanation": {
+                          "title": "Explanation",
+                          "type": "string"
+                        },
+                        "guideline_citation": {
+                          "default": "",
+                          "title": "Guideline Citation",
+                          "type": "string"
+                        },
+                        "insert_after_clause": {
+                          "default": "",
+                          "title": "Insert After Clause",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "clause_ref",
+                        "deviation_type",
+                        "snippet_a",
+                        "explanation"
+                      ],
+                      "title": "RawFinding",
+                      "type": "object"
+                    },
+                    "title": "Findings",
+                    "type": "array"
+                  }
+                }
+              },
+              {
+                "name": "inputs.template_system_message",
+                "type": "text",
+                "label": "template_system_message"
+              },
+              {
+                "name": "inputs.task_id",
+                "type": "number",
+                "label": "task_id"
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {
+            "title": "Workspace Id",
+            "type": "string"
+          },
+          "comparison_id": {
+            "title": "Comparison Id",
+            "type": "string"
+          },
+          "bucket_name": {
+            "title": "Bucket Name",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "findings": {
+            "items": {
+              "properties": {
+                "id": {
+                  "title": "Id",
+                  "type": "string"
+                },
+                "clause_ref": {
+                  "title": "Clause Ref",
+                  "type": "string"
+                },
+                "deviation_type": {
+                  "enum": [
+                    "high-risk",
+                    "medium-risk",
+                    "aligned",
+                    "missing",
+                    "modified",
+                    "extra"
+                  ],
+                  "title": "Deviation Type",
+                  "type": "string"
+                },
+                "snippet_a": {
+                  "title": "Snippet A",
+                  "type": "string"
+                },
+                "snippet_b": {
+                  "default": "",
+                  "title": "Snippet B",
+                  "type": "string"
+                },
+                "explanation": {
+                  "title": "Explanation",
+                  "type": "string"
+                },
+                "guideline_citation": {
+                  "default": "",
+                  "title": "Guideline Citation",
+                  "type": "string"
+                },
+                "insert_after_clause": {
+                  "default": "",
+                  "title": "Insert After Clause",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "clause_ref",
+                "deviation_type",
+                "snippet_a",
+                "explanation"
+              ],
+              "title": "RawFinding",
+              "type": "object"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "template_system_message": {
+            "title": "Template System Message",
+            "type": "string"
+          },
+          "task_id": {
+            "default": 0,
+            "title": "Task Id",
+            "type": "integer"
+          }
+        }
+      },
+      "inputDefaults": {
+        "workspace_id": "",
+        "comparison_id": "",
+        "bucket_name": "",
+        "mode": "",
+        "findings": null,
+        "template_system_message": "",
+        "task_id": 0
+      },
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "source": "=this",
+          "var": "output",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "comparison_id": {
+                "title": "Comparison Id",
+                "type": "string"
+              },
+              "bucket_key": {
+                "title": "Bucket Key",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "source": "=Error",
+          "var": "error",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "debug": {
+        "runtime": "bpmnEngine"
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "id": "bExtractorName",
+      "name": "name",
+      "type": "string",
+      "resource": "process",
+      "resourceKey": "5aac7787-422a-40b9-94e7-fbc09ba05701",
+      "default": "extractor",
+      "propertyAttribute": "name",
+      "resourceSubType": "Agent"
+    },
+    {
+      "id": "bExtractorFolder",
+      "name": "folderPath",
+      "type": "string",
+      "resource": "process",
+      "resourceKey": "5aac7787-422a-40b9-94e7-fbc09ba05701",
+      "default": "",
+      "propertyAttribute": "folderPath",
+      "resourceSubType": "Agent"
+    },
+    {
+      "id": "bComparatorName",
+      "name": "name",
+      "type": "string",
+      "resource": "process",
+      "resourceKey": "e8bdcdf7-e581-4bc3-a9b3-628866fac0f0",
+      "default": "comparator",
+      "propertyAttribute": "name",
+      "resourceSubType": "Agent"
+    },
+    {
+      "id": "bComparatorFolder",
+      "name": "folderPath",
+      "type": "string",
+      "resource": "process",
+      "resourceKey": "e8bdcdf7-e581-4bc3-a9b3-628866fac0f0",
+      "default": "",
+      "propertyAttribute": "folderPath",
+      "resourceSubType": "Agent"
+    },
+    {
+      "id": "bReviewerName",
+      "name": "name",
+      "type": "string",
+      "resource": "process",
+      "resourceKey": "2c3317a8-68cc-4167-ba23-f18d2aa922df",
+      "default": "reviewer",
+      "propertyAttribute": "name",
+      "resourceSubType": "Agent"
+    },
+    {
+      "id": "bReviewerFolder",
+      "name": "folderPath",
+      "type": "string",
+      "resource": "process",
+      "resourceKey": "2c3317a8-68cc-4167-ba23-f18d2aa922df",
+      "default": "",
+      "propertyAttribute": "folderPath",
+      "resourceSubType": "Agent"
     }
   ],
   "layout": {
     "nodes": {
       "start": {
         "position": {
-          "x": 256,
-          "y": 144
+          "x": 100,
+          "y": 300
+        }
+      },
+      "extractor": {
+        "position": {
+          "x": 320,
+          "y": 300
+        }
+      },
+      "comparator": {
+        "position": {
+          "x": 560,
+          "y": 300
+        }
+      },
+      "hitlReview": {
+        "position": {
+          "x": 800,
+          "y": 300
+        }
+      },
+      "reviewer": {
+        "position": {
+          "x": 1050,
+          "y": 300
+        }
+      },
+      "routeDecision": {
+        "position": {
+          "x": 1290,
+          "y": 300
+        }
+      },
+      "endConfirmed": {
+        "position": {
+          "x": 1520,
+          "y": 220
+        }
+      },
+      "endRejected": {
+        "position": {
+          "x": 1520,
+          "y": 380
         }
       }
     }

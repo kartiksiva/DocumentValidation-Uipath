@@ -8,6 +8,8 @@ export interface StartComparisonInput {
   docBKey: string;
   mode: ComparisonMode;
   templateId: string;
+  templateSystemMessage: string;
+  linkedGuidelineIds: string[];
   includeVersionHistory: boolean;
   comparisonId: string;
 }

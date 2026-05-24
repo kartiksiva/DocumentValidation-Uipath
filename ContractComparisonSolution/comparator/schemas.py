@@ -78,6 +78,7 @@ class ReviewerInput(BaseModel):
     mode: str
     findings: list[RawFinding]
     template_system_message: str
+    task_id: int = 0
 
 
 class ReviewerOutput(BaseModel):
