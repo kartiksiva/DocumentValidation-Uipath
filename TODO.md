@@ -46,23 +46,22 @@ Reference: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 
 ---
 
-## Plan B — Maestro + Agents (UiPath Studio / C#)
+## Plan B — Maestro + Agents (Python / Studio Web)
 
-Reference: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md`
+Reference: `docs/superpowers/plans/2026-05-24-plan-b-python.md` ← **active plan**  
+Old C# plan: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md` (archived — Studio Web is Python only)
 
 | Status | Task | Notes |
 |--------|------|-------|
-| `[!]` | **T1** Studio project setup | Need UiPath Studio installed. Two projects: `ContractComparisonAgent` + `GuidelineIndexer` |
-| `[x]` | **T2** Assets + Orchestrator config | 7 assets created in Shared folder. Buckets: contract-workspaces, contract-guidelines |
-| `[x]` | **T3** Azure AI Search index | Replaced by UiPath Context Grounding. Index `contract-guidelines` created in Shared folder from contract-guidelines bucket |
-| `[ ]` | **T4** Helper classes | `BucketClient.cs`, `AzureSearchClient.cs`, `LlmClient.cs` |
-| `[ ]` | **T5** JSON schemas | `ClauseJSON`, `FindingsJSON`, `ReviewPayload` schemas in `data/` |
-| `[ ]` | **T6** Agent 1 — Extractor | `ExtractClauses.cs` — DU + LLM fallback (threshold: 0.75) |
-| `[ ]` | **T7** Agent 2 — Comparator | `CompareClauses.cs` — batch size 7, RAG top-5, Azure AI Search |
-| `[ ]` | **T8** Agent 3 — Reviewer | `GenerateReview.cs` — scorecard, compliance %, narrative |
-| `[ ]` | **T9** Main orchestration | `Main.xaml` — `ContractComparisonProcess` (exact name, must match Plan A) |
-| `[ ]` | **T10** Guideline indexer | `GuidelineIndexer/Main.xaml` — `GuidelineIndexingProcess` |
-| `[ ]` | **T11** E2E verification | All 7 scenarios from spec §12 |
+| `[x]` | **PB-T0** Assets + Context Grounding | 7 assets + `contract-guidelines` CG index already created in Shared folder |
+| `[ ]` | **PB-T1** Solution scaffold | `uip solution init ContractComparisonSolution` + init flow + 3 agent projects + GuidelineIndexerSolution |
+| `[ ]` | **PB-T2** Shared Pydantic schemas | `schemas.py` — ClauseBlock, DocumentClauses, RawFinding, ReviewPayload (mirrors Plan A types) |
+| `[ ]` | **PB-T3** Extractor agent | `extractor/main.py` — LangGraph, download from Buckets, DU + LLM fallback, returns DocumentClauses |
+| `[ ]` | **PB-T4** Comparator agent | `comparator/main.py` — LangGraph, Context Grounding RAG, batch LLM, returns RawFinding list |
+| `[ ]` | **PB-T5** Reviewer agent | `reviewer/main.py` — LangGraph, scorecard + narrative, writes review.json to bucket |
+| `[ ]` | **PB-T6** Maestro flow | `ContractComparisonProcess.flow` — orchestrates agents + CreateHumanTask + HITL wait + status update |
+| `[ ]` | **PB-T7** Guideline indexer agent | `guideline-indexer/main.py` — LangGraph, chunk + index PDF/DOCX into Context Grounding |
+| `[ ]` | **PB-T8** Deploy + E2E | Deploy agents → pack+publish flow → test 5 E2E scenarios from spec |
 
 ---
 
