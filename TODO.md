@@ -31,18 +31,18 @@ Reference: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 |--------|------|-------|
 | `[x]` | **T1** Vite + React scaffold | `npm install`, `vite.config.ts`, `index.html`, `tailwind`, `tsconfig.json` |
 | `[x]` | **T2** Domain types | `src/types/workspace.ts`, `template.ts`, `review.ts` |
-| `[*]` | **T3** SDK singleton | `src/lib/sdk.ts` + test. Singleton pattern — never `new UiPath()` outside this file |
-| `[*]` | **T4** Bucket utilities | `src/lib/buckets.ts` + tests for `buildBucketKey()` |
-| `[*]` | **T5** Entity helpers | `src/lib/entities.ts` — CRUD for Workspace, Template, Guideline |
-| `[*]` | **T6** Maestro + Tasks | `src/lib/maestro.ts`, `tasks.ts`, `hooks/useTaskPolling.ts` (5s poll) |
-| `[*]` | **T7** App shell + routing | `AppShell.tsx`, `Sidebar.tsx`, `App.tsx`, stub pages |
-| `[*]` | **T8** Workspace browser | `WorkspaceBrowser.tsx` + `WorkspaceCard.tsx` — card grid, search, filter |
-| `[*]` | **T9** Workspace detail | `VersionList`, `RunComparisonForm`, `ComparisonHistory`, `WorkspaceDetail` |
-| `[*]` | **T10** Document renderer | `PdfViewer` (react-pdf), `DocxViewer` (mammoth), `DocumentPanel` |
-| `[*]` | **T11** Highlight layer | `HighlightLayer.tsx` — mark.js fuzzy match on `finding.snippetA` |
-| `[*]` | **T12** Review workspace | `FindingsSidebar`, `ConfirmBar`, `ReviewWorkspace` — full HITL UI |
-| `[*]` | **T13** Admin screens | `TemplateManager`, `GuidelineLibrary` — system message editor, guideline upload |
-| `[ ]` | **T14** Build + deploy | `uip codedapp pack/publish/deploy` to UiPath Cloud |
+| `[x]` | **T3** SDK singleton | `initPromise` pattern — safe for concurrent callers. Fixed `TemplateMode`→`ComparisonMode` + `taskId: string`→`number` |
+| `[x]` | **T4** Bucket utilities | `buildBucketKey()`, `initBuckets()`, upload/download helpers |
+| `[x]` | **T5** Entity helpers | Provider abstraction: `VITE_ENTITY_PROVIDER=supabase` (default) or `uipath`. Facade in `entities.ts`, implementations in `entity-providers/` |
+| `[x]` | **T6** Maestro + Tasks | `startComparison()`, `listPendingTasks()`, `useTaskPolling` 5s hook |
+| `[x]` | **T7** App shell + routing | `AppShell`, `Sidebar` with pending badge, all routes including `/reviews` |
+| `[x]` | **T8** Workspace browser | Card grid, search/filter, `WorkspaceBrowser` + `WorkspaceCard` |
+| `[x]` | **T9** Workspace detail | `VersionList`, `RunComparisonForm`, `ComparisonHistory`, `WorkspaceDetail` |
+| `[x]` | **T10** Document renderer | `PdfViewer` (react-pdf, URL revoked), `DocxViewer` (mammoth + DOMPurify), `DocumentPanel` |
+| `[x]` | **T11** Highlight layer | mark.js fuzzy match on `finding.snippetA`, per-type CSS classes |
+| `[x]` | **T12** Review workspace | `FindingsSidebar`, `ConfirmBar`, `ReviewWorkspace` — full HITL confirm/reject |
+| `[x]` | **T13** Admin screens | `TemplateManager`, `GuidelineLibrary` — upload + CRUD |
+| `[ ]` | **T14** Build + deploy | **Community:** create Supabase tables + set env vars. **Enterprise:** create Data Fabric entity types + add DataFabric scopes. Then `uip codedapp pack/publish/deploy` |
 
 ---
 

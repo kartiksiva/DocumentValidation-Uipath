@@ -8,7 +8,7 @@
 
 **Contract Comparison Agent** — UiPath Coded App (React + Vite) that lets business users compare legal contracts. AI pipeline runs via UiPath Maestro on the backend. This repo is the frontend only.
 
-Tech stack: React 19, Vite, TypeScript, Tailwind CSS, react-router-dom v7, react-pdf, mammoth, mark.js, @uipath/uipath-typescript, vitest, @testing-library/react
+Tech stack: React 19, Vite, TypeScript, Tailwind CSS, react-router-dom v7, react-pdf, mammoth, mark.js, @uipath/uipath-typescript, @supabase/supabase-js, dompurify, vitest, @testing-library/react
 
 ---
 
@@ -37,6 +37,7 @@ Write failing test → run to confirm fail → implement → run to confirm pass
 ### Project-specific rules
 - **No `new UiPath()` outside `src/lib/sdk.ts`.** Always import `getSDK`.
 - **No hardcoded bucket paths.** Always use `buildBucketKey()` from `src/lib/buckets.ts`.
+- **No direct provider imports.** Always use the facade in `src/lib/entities.ts`, never import from `src/lib/entity-providers/` directly.
 - **Process name must be exact string:** `'ContractComparisonProcess'` — never change this.
 - **No custom auth code.** OAuth injected by `@uipath/coded-apps-dev` at deploy time.
 
@@ -46,32 +47,44 @@ Write failing test → run to confirm fail → implement → run to confirm pass
 
 ```
 Coded App (React + Vite)           ← THIS REPO
+  ↕ Entity Provider (VITE_ENTITY_PROVIDER env var)
+  │   supabase  → Supabase (Community Edition, default)
+  │   uipath    → UiPath Data Fabric (Enterprise/Pro)
   ↕ @uipath/uipath-typescript SDK (browser, no backend)
 UiPath Platform Services
-  Buckets · Entities · MaestroProcesses · Tasks
+  Buckets · Tasks · Processes
   ↕ Maestro SDK
 ContractComparisonProcess          ← separate UiPath Studio project
   Agent 1 (Extractor) → Agent 2 (Comparator) → Agent 3 (Reviewer) → Human Task
 ```
 
-## Target `src/` Structure
+## `src/` Structure
 
 ```
 src/
   types/        workspace.ts · template.ts · review.ts
-  lib/          sdk.ts · buckets.ts · entities.ts · maestro.ts · tasks.ts
-  hooks/        useTaskPolling.ts · useWorkspace.ts
+  lib/
+    sdk.ts               # UiPath SDK singleton (initPromise pattern)
+    buckets.ts           # bucket key builder + upload/download + initBuckets()
+    entities.ts          # public facade — always import from here
+    maestro.ts           # startComparison()
+    tasks.ts             # listPendingTasks · confirmTask · rejectTask
+    supabase.ts          # bare Supabase client
+    entity-providers/
+      interface.ts       # EntityStore interface
+      index.ts           # factory (reads VITE_ENTITY_PROVIDER)
+      supabase.ts        # Supabase implementation
+      uipath.ts          # UiPath Data Fabric implementation
+  hooks/        useTaskPolling.ts
   components/   layout/ · workspace/ · review/ · admin/
-  pages/        WorkspacesPage · WorkspaceDetailPage · ReviewPage · TemplatesPage · GuidelinesPage
+  pages/        WorkspacesPage · WorkspaceDetailPage · ReviewPage · ReviewsPage · TemplatesPage · GuidelinesPage
 ```
-
-Full file-by-file breakdown: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 
 ## Critical Contracts (never change these)
 
 **Process name** — must match UiPath Maestro exactly:
 ```typescript
-sdk.MaestroProcesses.start({ processName: 'ContractComparisonProcess', ... })
+sdk.processes.start({ processName: 'ContractComparisonProcess', inputArguments: JSON.stringify(input) }, folderId)
 ```
 
 **Bucket path** for review download:
@@ -86,15 +99,16 @@ workspaces/{workspaceId}/comparisons/{comparisonId}/review.json
 - `scorecard[].status`: `"HIGH" | "MEDIUM" | "OK" | "MISSING" | "MODIFIED" | "EXTRA"`
 - `taskId`: populated by Maestro after CreateHumanTask
 
-**SDK singleton pattern** (src/lib/sdk.ts):
+**SDK singleton pattern** (src/lib/sdk.ts) — uses `initPromise` so concurrent callers share one init:
 ```typescript
 import { UiPath } from '@uipath/uipath-typescript';
-let instance: InstanceType<typeof UiPath> | null = null;
-export async function getSDK() {
-  if (instance) return instance;
-  instance = new UiPath();
-  await instance.initialize();
-  return instance;
+let initPromise: Promise<InstanceType<typeof UiPath>> | null = null;
+export function getSDK() {
+  if (!initPromise) {
+    const instance = new UiPath();
+    initPromise = instance.initialize().then(() => instance);
+  }
+  return initPromise;
 }
 ```
 
@@ -124,7 +138,7 @@ Vitest is configured with `globals: true` — no need to import `describe`, `it`
 
 ## Task Status
 
-See `TODO.md` for the authoritative task list. T1 (scaffold) and T2 (domain types) are `[x]` done. The "Current Task for Copilot" section below is updated by Claude Code before each session.
+See `TODO.md` for the authoritative task list. T1–T13 are `[x]` complete. T14 (deploy) is pending — requires Data Fabric entity types (Enterprise) or Supabase tables (Community) to be created first.
 
 ---
 
@@ -132,61 +146,20 @@ See `TODO.md` for the authoritative task list. T1 (scaffold) and T2 (domain type
 
 > **Claude updates this section when assigning the next task. Implement only what is described here.**
 
-### Task 3: SDK Singleton + Type Fix
+### All Plan A tasks complete (T1–T13)
 
-Two parts: fix a type inconsistency from T2, then build the SDK singleton.
+The frontend implementation is done. Awaiting T14 (deploy) after infrastructure setup:
 
----
+**Community Edition path:**
+1. Create Supabase tables: `contract_workspaces`, `templates`, `guidelines`
+2. Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local`
+3. Run `npm run build` then `uip codedapp pack/publish/deploy`
 
-#### Part A — Fix mode type inconsistency (surgical, types only)
-
-`workspace.ts` defines `ComparisonMode = 'buyer-seller-diff' | 'template-compliance'`.  
-`template.ts` defines `TemplateMode = 'buyer-seller' | 'compliance'` — different values for the same concept.
-
-**Fix:** Delete `TemplateMode` from `template.ts`. Change `Template.comparisonMode` to use `ComparisonMode` imported from `workspace.ts`. Also type `ReviewPayload.mode` in `review.ts` as `ComparisonMode` (import from `workspace.ts`) instead of `string`.
-
-After fix, `npx tsc --noEmit` must still be clean.
-
----
-
-#### Part B — SDK singleton (`src/lib/sdk.ts`)
-
-**Goal:** Single file that owns the `UiPath` instance. Zero tests needed (SDK is a third-party class — don't mock it). `npx tsc --noEmit` must pass.
-
-**Create `src/lib/sdk.ts`:**
-```typescript
-import { UiPath } from '@uipath/uipath-typescript';
-
-let instance: InstanceType<typeof UiPath> | null = null;
-
-export async function getSDK(): Promise<InstanceType<typeof UiPath>> {
-  if (instance) return instance;
-  instance = new UiPath();
-  await instance.initialize();
-  return instance;
-}
-```
-
-That is the entire file. No exports beyond `getSDK`. No error handling — `initialize()` throws if auth fails and that is correct behavior.
-
----
-
-**Verify:**
-```bash
-npx tsc --noEmit
-```
-Expected: no output.
-
-**Commit (two commits):**
-```bash
-git add src/types/
-git commit -m "fix: align TemplateMode with ComparisonMode, type ReviewPayload.mode"
-
-git add src/lib/sdk.ts
-git commit -m "feat: add SDK singleton (getSDK)"
-```
-
-**Done when:** Two commits made, `npx tsc --noEmit` clean. Report: paste tsc output + both commit hashes.
+**Enterprise path:**
+1. Create entity types in UiPath Data Service: `ContractWorkspace`, `Template`, `Guideline`
+2. Add DataFabric scopes to `uipath.json` scope string
+3. Set `VITE_ENTITY_PROVIDER=uipath` in `.env.local`
+4. Run `npm run build` then `uip codedapp pack/publish/deploy`
 
 ---
 

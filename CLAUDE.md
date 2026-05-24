@@ -56,8 +56,6 @@ Contract Comparison Agent — a UiPath Coded App (React + Vite) that lets busine
 
 ## Commands
 
-> Plan A scaffold not yet built. Once Task 1 of Plan A is complete, commands are:
-
 ```bash
 npm run dev          # Vite dev server → http://localhost:5173
 npm run build        # tsc + vite build → dist/
@@ -72,22 +70,58 @@ Five layers (UI-agnostic — swap the Coded App without touching Maestro):
 
 ```
 Coded App (React + Vite)           ← Plan A
+  ↕ Entity Provider (VITE_ENTITY_PROVIDER)
+  │   supabase  → Supabase (Community Edition, default)
+  │   uipath    → UiPath Data Fabric (Enterprise/Pro)
   ↕ @uipath/uipath-typescript SDK (browser, no backend)
 UiPath Platform Services
-  Buckets · Entities · MaestroProcesses · Tasks
+  Buckets · Tasks · Processes
   ↕ Maestro SDK
 ContractComparisonProcess          ← Plan B, Main.xaml
   Mode Router → Template Loader → Agent 1 → Agent 2 → Agent 3 → Human Task
   ↕ Agent calls (C# Coded Workflows)
 Storage & Knowledge
-  Buckets · Entities · Azure AI Search (RAG) · Assets
+  Buckets · UiPath Context Grounding (RAG) · Assets
+```
+
+## Entity Provider Setup
+
+Entity storage is selected at build/dev time via the `VITE_ENTITY_PROVIDER` env var in `.env.local`.
+
+### Community Edition (default) — Supabase
+```bash
+VITE_ENTITY_PROVIDER=supabase      # or omit (supabase is default)
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+```
+Required Supabase tables: `contract_workspaces`, `templates`, `guidelines` (snake_case columns matching the domain types).
+
+### Enterprise/Pro — UiPath Data Fabric
+```bash
+VITE_ENTITY_PROVIDER=uipath
+```
+Add DataFabric scopes to `uipath.json`:
+```json
+"scope": "OR.Buckets OR.Tasks OR.Jobs PIMS DataFabric.Schema.Read DataFabric.Data.Read DataFabric.Data.Write"
+```
+Required entity types in UiPath Data Service (Admin → Data Service): `ContractWorkspace`, `Template`, `Guideline`.
+
+### Provider abstraction files
+```
+src/lib/entity-providers/
+  interface.ts   — EntityStore interface (all providers implement this)
+  index.ts       — factory: reads VITE_ENTITY_PROVIDER, lazy-loads the right module
+  supabase.ts    — Supabase implementation
+  uipath.ts      — UiPath Data Fabric implementation
+src/lib/entities.ts  — thin public facade; always call these, never import providers directly
+src/lib/supabase.ts  — bare Supabase client (shared by supabase.ts provider)
 ```
 
 ## Critical Contracts Between Plan A and Plan B
 
 **Process name** (must be exact string):
 ```typescript
-sdk.MaestroProcesses.start({ processName: 'ContractComparisonProcess', ... })
+sdk.processes.start({ processName: 'ContractComparisonProcess', inputArguments: JSON.stringify(input) }, folderId)
 ```
 
 **Bucket path** Plan A downloads review from:
@@ -106,8 +140,12 @@ workspaces/{workspaceId}/comparisons/{comparisonId}/review.json
 
 ```typescript
 // Always use the singleton — never `new UiPath()` outside sdk.ts
+// Uses initPromise pattern to handle concurrent callers safely
 import { getSDK } from './lib/sdk';
 const sdk = await getSDK();
+
+// Entity CRUD — always via entities.ts facade, never import providers directly
+import { listWorkspaces, createWorkspace } from './lib/entities';
 
 // Bucket key builder — use this, never hardcode paths
 import { buildBucketKey } from './lib/buckets';
