@@ -1,6 +1,7 @@
+import type { ComparisonMode } from './workspace';
+
 export type TemplateStatus = 'active' | 'draft';
 export type GuidelineStatus = 'indexing' | 'indexed' | 'error';
-export type TemplateMode = 'buyer-seller' | 'compliance';
 
 export interface Template {
   id: string;
@@ -9,7 +10,7 @@ export interface Template {
   bucketKey: string;
   systemMessage: string;
   linkedGuidelineIds: string[];
-  comparisonMode: TemplateMode;
+  comparisonMode: ComparisonMode;
   status: TemplateStatus;
 }
 

@@ -8,3 +8,6 @@ dist/
 src/**/*.js
 src/**/*.js.map
 .uipath/
+vite.config.js
+vite.config.js.map
+supabase/.temp/

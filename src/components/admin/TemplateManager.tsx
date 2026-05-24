@@ -25,7 +25,7 @@ export default function TemplateManager({ templates, guidelines, onUpdate, onCre
         bucketKey: key,
         systemMessage: '',
         linkedGuidelineIds: [],
-        comparisonMode: 'compliance',
+        comparisonMode: 'template-compliance',
         status: 'draft',
       });
       onCreate(template);

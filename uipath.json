@@ -4,5 +4,5 @@
   "orgName": "kartizpujinj",
   "tenantName": "DefaultTenant",
   "baseUrl": "https://cloud.uipath.com/kartizpujinj",
-  "redirectUri": "https://kartizpujinj.uipath.host/contractai"
+  "redirectUri": "http://localhost:5173"
 }

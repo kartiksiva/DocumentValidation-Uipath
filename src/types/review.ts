@@ -18,13 +18,15 @@ export interface ScorecardCategory {
   summary: string;
 }
 
+import type { ComparisonMode } from './workspace';
+
 export interface ReviewPayload {
   comparisonId: string;
   workspaceId: string;
-  mode: string;
+  mode: ComparisonMode;
   scorecard: ScorecardCategory[];
   compliancePercent?: number;
   findings: Finding[];
   narrative: string;
-  taskId: string;
+  taskId: number;
 }

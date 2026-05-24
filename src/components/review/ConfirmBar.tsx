@@ -12,7 +12,7 @@ export default function ConfirmBar({ payload, onDone }: Props) {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const taskId = Number(payload.taskId);
+  const taskId = payload.taskId;
 
   async function handleConfirm() {
     setSubmitting(true);

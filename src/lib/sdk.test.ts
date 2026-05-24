@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@uipath/uipath-typescript', () => ({
   UiPath: class {
+    setMultiLogin = vi.fn();
     initialize = vi.fn().mockResolvedValue(undefined);
     Buckets = {};
     Entities = {};
