@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { getAppBase } from '@uipath/uipath-typescript';
 import AppShell from './components/layout/AppShell';
 import WorkspacesPage from './pages/WorkspacesPage';
 import WorkspaceDetailPage from './pages/WorkspaceDetailPage';
@@ -29,7 +30,7 @@ export default function App() {
     );
   }
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={getAppBase()}>
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<Navigate to="/workspaces" replace />} />
