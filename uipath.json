@@ -3,6 +3,6 @@
   "scope": "OR.Buckets OR.Tasks OR.Jobs PIMS",
   "orgName": "kartizpujinj",
   "tenantName": "DefaultTenant",
-  "baseUrl": "https://cloud.uipath.com",
+  "baseUrl": "https://cloud.uipath.com/kartizpujinj",
   "redirectUri": "https://kartizpujinj.uipath.host/contractai"
 }
