@@ -1,13 +1,8 @@
 {
   "clientId": "9e930644-509a-46d2-b390-1dfe1963c4d9",
-  "scopes": [
-    "OR.Buckets",
-    "OR.Entities",
-    "OR.Tasks",
-    "OR.Maestro",
-    "OR.Jobs"
-  ],
-  "organization": "kartizpujinj",
-  "tenant": "DefaultTenant",
-  "baseUrl": "https://cloud.uipath.com"
+  "scope": "OR.Buckets OR.Entities OR.Tasks OR.Maestro OR.Jobs",
+  "orgName": "kartizpujinj",
+  "tenantName": "DefaultTenant",
+  "baseUrl": "https://cloud.uipath.com",
+  "redirectUri": "http://localhost:5173"
 }
