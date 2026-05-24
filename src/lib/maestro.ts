@@ -12,7 +12,7 @@ export interface StartComparisonInput {
   comparisonId: string;
 }
 
-export async function startComparison(input: StartComparisonInput, folderId: number): Promise<void> {
+export async function startComparison(input: StartComparisonInput, folderId = 0): Promise<void> {
   const sdk = await getSDK();
   await sdk.processes.start(
     { processName: 'ContractComparisonProcess', inputArguments: JSON.stringify(input) },
