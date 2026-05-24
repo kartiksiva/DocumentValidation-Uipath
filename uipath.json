@@ -1,0 +1,13 @@
+{
+  "clientId": "YOUR_CLIENT_ID",
+  "scopes": [
+    "OR.Buckets",
+    "OR.Entities",
+    "OR.Tasks",
+    "OR.Maestro",
+    "OR.Jobs"
+  ],
+  "organization": "YOUR_ORG_NAME",
+  "tenant": "YOUR_TENANT_NAME",
+  "baseUrl": "https://cloud.uipath.com"
+}
