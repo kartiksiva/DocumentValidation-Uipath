@@ -168,8 +168,8 @@ npx tsc --noEmit     # type check only
 
 | Task | Description | Status |
 |------|-------------|--------|
-| T1 | Vite + React scaffold | `[ ]` |
-| T2 | Domain types | `[ ]` |
+| T1 | Vite + React scaffold | `[x]` |
+| T2 | Domain types | `[~]` |
 | T3 | SDK singleton | `[ ]` |
 | T4 | Bucket utilities | `[ ]` |
 | T5 | Entity helpers | `[ ]` |
@@ -189,138 +189,147 @@ npx tsc --noEmit     # type check only
 
 > **Claude updates this section when assigning the next task. Implement only what is described here.**
 
-### Task 1: Vite + React Scaffold
+### Task 2: Domain Types
 
-**Goal:** Set up working Vite + React + TypeScript + Tailwind dev environment. Verify `npm run dev` starts with no errors.
+**Goal:** Create the three core TypeScript type files. No logic — types only. `npx tsc --noEmit` must pass with zero errors.
 
-**Step 1 — Install dependencies:**
-```bash
-npm install react react-dom react-router-dom react-pdf mammoth mark.js
-npm install -D vite @vitejs/plugin-react tailwindcss postcss autoprefixer \
-  @uipath/coded-apps-dev vitest @testing-library/react @testing-library/jest-dom \
-  @types/react @types/react-dom @types/mammoth jsdom
-npx tailwindcss init -p
-```
+**Files to create:**
+- `src/types/workspace.ts`
+- `src/types/template.ts`
+- `src/types/review.ts`
 
-**Step 2 — Update `package.json` scripts section:**
-```json
-"scripts": {
-  "dev": "vite",
-  "build": "tsc && vite build",
-  "test": "vitest run",
-  "test:watch": "vitest"
+---
+
+**Step 1 — Create `src/types/workspace.ts`:**
+```typescript
+export type ComparisonMode = 'buyer-seller-diff' | 'template-compliance';
+export type ComparisonStatus = 'running' | 'awaiting-review' | 'confirmed' | 'rejected';
+
+export interface WorkspaceVersion {
+  versionNumber: number;
+  bucketKey: string;
+  filename: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  fileSizeBytes: number;
 }
-```
-Also ensure `"type": "module"` is set.
 
-**Step 3 — Create `vite.config.ts`:**
-```typescript
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import codedAppsDev from '@uipath/coded-apps-dev/vite';
-
-export default defineConfig({
-  base: './',
-  plugins: [react(), codedAppsDev()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test-setup.ts'],
-    globals: true,
-  },
-});
-```
-
-**Step 4 — Create `src/test-setup.ts`:**
-```typescript
-import '@testing-library/jest-dom';
-```
-
-**Step 5 — Replace `tsconfig.json`:**
-```json
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["vitest/globals"]
-  },
-  "include": ["src", "vite.config.ts"]
+export interface WorkspaceComparison {
+  comparisonId: string;
+  docAVersion: number;
+  docBVersion: number;
+  mode: ComparisonMode;
+  templateId: string;
+  includeVersionHistory: boolean;
+  status: ComparisonStatus;
+  confirmedBy?: string;
+  confirmedAt?: string;
+  rejectionNote?: string;
+  startedAt: string;
+  findingSummary?: {
+    high: number;
+    medium: number;
+    aligned: number;
+    missing: number;
+    modified: number;
+    extra: number;
+  };
 }
-```
 
-**Step 6 — Create `index.html`:**
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ContractAI</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
-
-**Step 7 — Create `tailwind.config.ts`:**
-```typescript
-import type { Config } from 'tailwindcss';
-export default {
-  content: ['./index.html', './src/**/*.{ts,tsx}'],
-  theme: { extend: {} },
-  plugins: [],
-} satisfies Config;
-```
-
-**Step 8 — Create `src/main.tsx`:**
-```typescript
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-```
-
-**Step 9 — Create `src/index.css`:**
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-**Step 10 — Create minimal `src/App.tsx`** (stub only — full routing added in T7):
-```typescript
-export default function App() {
-  return <div className="p-4 text-slate-700">ContractAI loading…</div>;
+export interface ContractWorkspace {
+  id: string;
+  name: string;
+  description: string;
+  defaultTemplateId: string;
+  buyerParty: string;
+  sellerParty: string;
+  contractType: string;
+  ownerId: string;
+  createdAt: string;
+  versions: WorkspaceVersion[];
+  comparisons: WorkspaceComparison[];
 }
 ```
 
-**Step 11 — Verify:**
-```bash
-npm run dev
-```
-Expected: Vite dev server starts at `http://localhost:5173`, no console errors, page renders "ContractAI loading…"
+**Step 2 — Create `src/types/template.ts`:**
+```typescript
+export type TemplateStatus = 'active' | 'draft';
+export type GuidelineStatus = 'indexing' | 'indexed' | 'error';
+export type TemplateMode = 'buyer-seller' | 'compliance';
 
-**Step 12 — Commit:**
-```bash
-git init
-git add package.json vite.config.ts index.html tailwind.config.ts postcss.config.ts tsconfig.json src/
-git commit -m "feat: scaffold React + Vite Coded App"
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  bucketKey: string;
+  systemMessage: string;
+  linkedGuidelineIds: string[];
+  comparisonMode: TemplateMode;
+  status: TemplateStatus;
+}
+
+export interface Guideline {
+  id: string;
+  name: string;
+  description: string;
+  bucketKey: string;
+  chunkCount: number;
+  indexingStatus: GuidelineStatus;
+  linkedTemplateIds: string[];
+  uploadedAt: string;
+}
 ```
 
-**Done when:** `npm run dev` starts clean. Report: paste the terminal output confirming the port.
+**Step 3 — Create `src/types/review.ts`:**
+
+> CRITICAL: These exact union values are shared with Plan B (Maestro agents). Do not change them.
+
+```typescript
+export type DeviationType = 'high-risk' | 'medium-risk' | 'aligned' | 'missing' | 'modified' | 'extra';
+export type RagStatus = 'HIGH' | 'MEDIUM' | 'OK' | 'MISSING' | 'MODIFIED' | 'EXTRA';
+
+export interface Finding {
+  id: string;
+  clauseRef: string;
+  deviationType: DeviationType;
+  snippetA: string;
+  snippetB?: string;
+  explanation: string;
+  guidelineCitation?: string;
+  insertAfterClause?: string;
+}
+
+export interface ScorecardCategory {
+  name: string;
+  status: RagStatus;
+  summary: string;
+}
+
+export interface ReviewPayload {
+  comparisonId: string;
+  workspaceId: string;
+  mode: string;
+  scorecard: ScorecardCategory[];
+  compliancePercent?: number;
+  findings: Finding[];
+  narrative: string;
+  taskId: string;
+}
+```
+
+**Step 4 — Verify:**
+```bash
+npx tsc --noEmit
+```
+Expected: no output (zero errors).
+
+**Step 5 — Commit:**
+```bash
+git add src/types/
+git commit -m "feat: add domain types for workspace, template, review"
+```
+
+**Done when:** `npx tsc --noEmit` exits clean. Report: list the 3 files created + paste tsc output.
 
 ---
 
