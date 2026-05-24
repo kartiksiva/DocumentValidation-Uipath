@@ -60,18 +60,12 @@ export async function initBuckets(): Promise<void> {
   const bucket = items.find(b => b.name === 'contract-workspaces');
   if (!bucket) throw new Error('contract-workspaces bucket not found');
 
-  const token = sdk.getToken();
-  if (!token) throw new Error('SDK not authenticated');
-
-  const { baseUrl, orgName, tenantName } = sdk.config;
-  const res = await fetch(
-    `${baseUrl}/${orgName}/${tenantName}/orchestrator_/odata/Folders?$filter=Name eq 'Shared'&$select=Id`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (!res.ok) throw new Error(`Folder lookup failed: ${res.status}`);
-  const data = await res.json() as { value: Array<{ Id: number }> };
-  const folderId = data.value[0]?.Id;
-  if (!folderId) throw new Error('Shared folder not found');
+  // Numeric folder ID for the Shared folder — set via VITE_UIPATH_FOLDER_ID env var
+  // (avoids a raw /odata/Folders API call that requires OR.Folders scope)
+  const folderIdStr = import.meta.env.VITE_UIPATH_FOLDER_ID as string | undefined;
+  if (!folderIdStr) throw new Error('VITE_UIPATH_FOLDER_ID is not set');
+  const folderId = parseInt(folderIdStr, 10);
+  if (isNaN(folderId)) throw new Error('VITE_UIPATH_FOLDER_ID is not a valid number');
 
   configureBucket(bucket.id, folderId);
 }
