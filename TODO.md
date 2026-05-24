@@ -54,12 +54,12 @@ Old C# plan: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md` (archive
 | Status | Task | Notes |
 |--------|------|-------|
 | `[x]` | **PB-T0** Assets + Context Grounding | 7 assets + `contract-guidelines` CG index already created in Shared folder |
-| `[ ]` | **PB-T1** Solution scaffold | `uip solution init ContractComparisonSolution` + init flow + 3 agent projects + GuidelineIndexerSolution |
-| `[ ]` | **PB-T2** Shared Pydantic schemas | `schemas.py` — ClauseBlock, DocumentClauses, RawFinding, ReviewPayload (mirrors Plan A types) |
-| `[ ]` | **PB-T3** Extractor agent | `extractor/main.py` — LangGraph, download from Buckets, DU + LLM fallback, returns DocumentClauses |
-| `[ ]` | **PB-T4** Comparator agent | `comparator/main.py` — LangGraph, Context Grounding RAG, batch LLM, returns RawFinding list |
-| `[ ]` | **PB-T5** Reviewer agent | `reviewer/main.py` — LangGraph, scorecard + narrative, writes review.json to bucket |
-| `[ ]` | **PB-T6** Maestro flow | `ContractComparisonProcess.flow` — orchestrates agents + CreateHumanTask + HITL wait + status update |
+| `[x]` | **PB-T1** Solution scaffold | `uip solution init ContractComparisonSolution` + init flow + 3 agent projects + GuidelineIndexerSolution. Commit `04ad6ca` |
+| `[x]` | **PB-T2** Shared Pydantic schemas | `schemas.py` — ClauseBlock, DocumentClauses, RawFinding, ReviewPayload (camelCase aliases), all agent I/O types. Commit `b5088c2` |
+| `[x]` | **PB-T3** Extractor agent | `extractor/main.py` — DU attempt → LLM fallback (pypdf/python-docx), ExtractorState with temp paths. Commit `8f3f692` |
+| `[x]` | **PB-T4** Comparator agent | `comparator/main.py` — clause pairing, batch RAG (ContextGroundingRetriever), structured LLM output per batch. Commit `8f3f692` |
+| `[x]` | **PB-T5** Reviewer agent | `reviewer/main.py` — scorecard (LLM), compliance%, narrative, ReviewPayload → bucket. Fixed `source_path=` (was `file_path=`). |
+| `[x]` | **PB-T6** Maestro flow | `ContractComparisonProcess.flow` — orchestrates agents + CreateHumanTask + HITL wait + status update. Also: ReviewerInput.task_id, reviewer assemble_payload, Plan A maestro.ts + RunComparisonForm |
 | `[ ]` | **PB-T7** Guideline indexer agent | `guideline-indexer/main.py` — LangGraph, chunk + index PDF/DOCX into Context Grounding |
 | `[ ]` | **PB-T8** Deploy + E2E | Deploy agents → pack+publish flow → test 5 E2E scenarios from spec |
 
