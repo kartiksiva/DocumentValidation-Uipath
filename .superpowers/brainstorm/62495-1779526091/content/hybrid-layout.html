@@ -1,0 +1,158 @@
+<h2>Hybrid Layout — A + C Combined</h2>
+<p class="subtitle">Scorecard drives navigation. Click a finding → jumps to matching clause in both documents.</p>
+
+<style>
+  .workspace { display: grid; grid-template-columns: 240px 1fr; grid-template-rows: auto 1fr; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; min-height: 460px; font-size: 0.78rem; }
+  .ws-topbar { grid-column: 1 / -1; background: #0f172a; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+  .ws-topbar .doc-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+  .ws-topbar .mode-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: #2563eb22; color: #60a5fa; font-weight: 600; }
+  .ws-sidebar { background: #0f172a; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .ws-sidebar-section { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .ws-sidebar-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #475569; margin-bottom: 0.4rem; }
+  .rag-row { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; font-size: 0.74rem; color: #94a3b8; }
+  .rag-pill { font-size: 0.62rem; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+  .finding-item { padding: 0.35rem 0.5rem; border-radius: 5px; margin: 2px 0; cursor: pointer; transition: background 0.15s; display: flex; gap: 0.4rem; align-items: flex-start; }
+  .finding-item:hover { background: #1e293b; }
+  .finding-item.active { background: #1e3a5f; }
+  .finding-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .finding-text { color: #94a3b8; font-size: 0.72rem; line-height: 1.4; }
+  .ws-docarea { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+  .doc-panel { display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+  .doc-panel:last-child { border-right: none; }
+  .doc-panel-header { padding: 0.4rem 0.75rem; background: #0f172a; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  .doc-body { padding: 0.75rem; overflow-y: auto; flex: 1; font-family: Georgia, serif; color: #cbd5e1; line-height: 1.85; font-size: 0.77rem; background: #1e293b; }
+  .clause-block { margin-bottom: 0.75rem; }
+  .clause-title { font-weight: 700; color: #e2e8f0; margin-bottom: 0.2rem; font-size: 0.78rem; }
+  .hl-red { background: #ef444428; border-bottom: 2px solid #ef4444; padding: 0 2px; border-radius: 2px; }
+  .hl-amber { background: #f59e0b28; border-bottom: 2px solid #f59e0b; padding: 0 2px; border-radius: 2px; }
+  .hl-green { background: #22c55e28; border-bottom: 2px solid #22c55e; padding: 0 2px; border-radius: 2px; }
+  .clause-finding { background: #0f172a; border-left: 2px solid #3b82f6; border-radius: 0 4px 4px 0; padding: 0.35rem 0.6rem; margin-top: 0.3rem; font-family: system-ui; font-size: 0.7rem; color: #60a5fa; line-height: 1.5; }
+  .confirm-bar { grid-column: 1 / -1; background: #0f172a; border-top: 1px solid var(--border); padding: 0.6rem 1rem; display: flex; gap: 0.75rem; align-items: center; justify-content: flex-end; }
+  .btn { padding: 0.35rem 1rem; border-radius: 5px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; }
+  .btn-confirm { background: #16a34a; color: white; }
+  .btn-reject { background: #1e293b; color: #f87171; border: 1px solid #dc2626; }
+  .summary-chip { font-size: 0.68rem; color: #64748b; flex: 1; }
+</style>
+
+<div class="mockup">
+  <div class="mockup-header">Contract Review Workspace — Buyer vs Seller (Liability section active)</div>
+  <div class="mockup-body" style="padding:0;">
+
+    <div class="workspace">
+
+      <!-- Top bar -->
+      <div class="ws-topbar">
+        <span class="doc-title">Acme_Services_Agreement_v2.pdf</span>
+        <span style="color:#475569;">vs</span>
+        <span class="doc-title">Vendor_MSA_Draft.docx</span>
+        <span class="mode-badge">Buyer / Seller Diff</span>
+        <span style="flex:1;"></span>
+        <span style="font-size:0.68rem; color:#475569;">3 High · 2 Medium · 4 Aligned</span>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="ws-sidebar">
+
+        <!-- Scorecard -->
+        <div class="ws-sidebar-section">
+          <div class="ws-sidebar-label">Risk Scorecard</div>
+          <div class="rag-row">Liability <span class="rag-pill" style="background:#ef444422;color:#ef4444;">HIGH</span></div>
+          <div class="rag-row">IP Ownership <span class="rag-pill" style="background:#f59e0b22;color:#f59e0b;">MED</span></div>
+          <div class="rag-row">Payment <span class="rag-pill" style="background:#f59e0b22;color:#f59e0b;">MED</span></div>
+          <div class="rag-row">Termination <span class="rag-pill" style="background:#22c55e22;color:#22c55e;">OK</span></div>
+          <div class="rag-row">Confidentiality <span class="rag-pill" style="background:#22c55e22;color:#22c55e;">OK</span></div>
+        </div>
+
+        <!-- Findings -->
+        <div class="ws-sidebar-section" style="flex:1; overflow-y:auto;">
+          <div class="ws-sidebar-label">Findings</div>
+          <div class="finding-item active">
+            <div class="finding-dot" style="background:#ef4444;"></div>
+            <div class="finding-text">§5 Liability cap: 1× vs 3× annual fees</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#f59e0b;"></div>
+            <div class="finding-text">§7 IP reverts vs retained post-term</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#f59e0b;"></div>
+            <div class="finding-text">§12 Net-30 vs Net-45 payment terms</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#22c55e;"></div>
+            <div class="finding-text">§9 Termination notice: 30 days ✓</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#22c55e;"></div>
+            <div class="finding-text">§11 Governing law: Delaware ✓</div>
+          </div>
+        </div>
+
+        <!-- Narrative toggle -->
+        <div class="ws-sidebar-section">
+          <div class="ws-sidebar-label">Summary</div>
+          <div style="color:#64748b; font-size:0.71rem; line-height:1.6;">Key gap: liability cap misalignment (2× exposure). IP clause needs negotiation before signing.</div>
+        </div>
+
+      </div>
+
+      <!-- Document area -->
+      <div class="ws-docarea">
+
+        <!-- Buyer doc -->
+        <div class="doc-panel">
+          <div class="doc-panel-header">Buyer Contract</div>
+          <div class="doc-body">
+            <div class="clause-block" style="opacity:0.5; font-size:0.72rem;">
+              <div class="clause-title">4. Payment Terms</div>
+              <div>Invoices payable within <span class="hl-amber">thirty (30) days</span> of receipt...</div>
+            </div>
+            <div class="clause-block" style="border-left:2px solid #ef4444; padding-left:0.5rem;">
+              <div class="clause-title">5. Limitation of Liability</div>
+              <div>In no event shall either party's liability exceed <span class="hl-red">one (1) times the annual fees</span> paid or payable under this Agreement in the twelve months preceding the claim.</div>
+              <div class="clause-finding">⚠ Seller cap is 3×. You are exposed to 2× additional liability. Recommend aligning to 1.5× or 2×.</div>
+            </div>
+            <div class="clause-block" style="opacity:0.5; font-size:0.72rem;">
+              <div class="clause-title">6. Indemnification</div>
+              <div>Each party shall indemnify and hold harmless the other...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seller doc -->
+        <div class="doc-panel">
+          <div class="doc-panel-header">Seller Contract</div>
+          <div class="doc-body">
+            <div class="clause-block" style="opacity:0.5; font-size:0.72rem;">
+              <div class="clause-title">4. Payment Terms</div>
+              <div>Invoices payable within <span class="hl-amber">forty-five (45) days</span> of receipt...</div>
+            </div>
+            <div class="clause-block" style="border-left:2px solid #ef4444; padding-left:0.5rem;">
+              <div class="clause-title">5. Limitation of Liability</div>
+              <div>In no event shall either party's liability exceed <span class="hl-red">three (3) times the annual fees</span> paid or payable under this Agreement in the twelve months preceding the claim.</div>
+              <div class="clause-finding">⚠ Buyer cap is 1×. Misalignment creates 2× exposure gap. This clause requires negotiation.</div>
+            </div>
+            <div class="clause-block" style="opacity:0.5; font-size:0.72rem;">
+              <div class="clause-title">6. Indemnification</div>
+              <div>Each party shall indemnify and hold harmless the other...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Confirm bar -->
+      <div class="confirm-bar">
+        <div class="summary-chip">Reviewed 1 of 3 high-risk findings · Human task assigned to you</div>
+        <button class="btn btn-reject">Reject &amp; Escalate</button>
+        <button class="btn btn-confirm">Confirm Review ✓</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:1rem; padding:0.75rem 1rem; background:var(--surface); border-radius:8px; font-size:0.83rem; color:var(--text-secondary); line-height:1.7;">
+  <strong>How it works:</strong> Scorecard on left = C's report view. Click any finding → both documents scroll to matching clause, dimming unrelated sections. Inline finding cards expand below highlighted text = C's expandable source. Confirm/Reject bar always visible = Maestro human task completion.
+</div>

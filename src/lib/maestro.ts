@@ -12,10 +12,10 @@ export interface StartComparisonInput {
   comparisonId: string;
 }
 
-export async function startComparison(input: StartComparisonInput): Promise<void> {
+export async function startComparison(input: StartComparisonInput, folderId: number): Promise<void> {
   const sdk = await getSDK();
-  await sdk.MaestroProcesses.start({
-    processName: 'ContractComparisonProcess',
-    inputArguments: input,
-  });
+  await sdk.processes.start(
+    { processName: 'ContractComparisonProcess', inputArguments: JSON.stringify(input) },
+    folderId
+  );
 }

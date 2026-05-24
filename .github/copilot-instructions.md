@@ -8,7 +8,7 @@
 
 **Contract Comparison Agent** — UiPath Coded App (React + Vite) that lets business users compare legal contracts. AI pipeline runs via UiPath Maestro on the backend. This repo is the frontend only.
 
-Tech stack: React 18, Vite, TypeScript, Tailwind CSS, react-router-dom v6, react-pdf, mammoth, mark.js, @uipath/uipath-typescript, vitest, @testing-library/react
+Tech stack: React 19, Vite, TypeScript, Tailwind CSS, react-router-dom v7, react-pdf, mammoth, mark.js, @uipath/uipath-typescript, vitest, @testing-library/react
 
 ---
 
@@ -54,65 +54,18 @@ ContractComparisonProcess          ← separate UiPath Studio project
   Agent 1 (Extractor) → Agent 2 (Comparator) → Agent 3 (Reviewer) → Human Task
 ```
 
-## File Map (target structure when complete)
+## Target `src/` Structure
 
 ```
 src/
-  main.tsx
-  App.tsx
-  index.css
-  test-setup.ts
-  types/
-    workspace.ts
-    template.ts
-    review.ts
-  lib/
-    sdk.ts                # SDK singleton — getSDK() only
-    buckets.ts            # buildBucketKey(), upload/download helpers
-    entities.ts           # Workspace + Template + Guideline CRUD
-    maestro.ts            # startComparison()
-    tasks.ts              # listPendingTasks(), confirmTask(), rejectTask()
-  hooks/
-    useTaskPolling.ts     # 5s poll for pending human tasks
-    useWorkspace.ts
-  components/
-    layout/
-      AppShell.tsx
-      Sidebar.tsx
-    workspace/
-      WorkspaceBrowser.tsx
-      WorkspaceCard.tsx
-      WorkspaceDetail.tsx
-      VersionList.tsx
-      RunComparisonForm.tsx
-      ComparisonHistory.tsx
-    review/
-      ReviewWorkspace.tsx
-      DocumentPanel.tsx
-      PdfViewer.tsx
-      DocxViewer.tsx
-      FindingsSidebar.tsx
-      HighlightLayer.tsx
-      ConfirmBar.tsx
-    admin/
-      TemplateManager.tsx
-      TemplateCard.tsx
-      GuidelineLibrary.tsx
-      GuidelineRow.tsx
-  pages/
-    WorkspacesPage.tsx
-    WorkspaceDetailPage.tsx
-    ReviewPage.tsx
-    TemplatesPage.tsx
-    GuidelinesPage.tsx
-index.html
-vite.config.ts
-tailwind.config.ts
-postcss.config.ts
-uipath.json
+  types/        workspace.ts · template.ts · review.ts
+  lib/          sdk.ts · buckets.ts · entities.ts · maestro.ts · tasks.ts
+  hooks/        useTaskPolling.ts · useWorkspace.ts
+  components/   layout/ · workspace/ · review/ · admin/
+  pages/        WorkspacesPage · WorkspaceDetailPage · ReviewPage · TemplatesPage · GuidelinesPage
 ```
 
----
+Full file-by-file breakdown: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 
 ## Critical Contracts (never change these)
 
@@ -157,31 +110,21 @@ const POLL_INTERVAL_MS = 5000;
 ```bash
 npm run dev          # Vite dev server → http://localhost:5173
 npm run build        # tsc + vite build → dist/
-npm test             # vitest run (all tests)
+npm test             # vitest run (all tests, CI mode)
+npm run test:watch   # vitest watch mode
 npm test -- <path>   # run single test file
 npx tsc --noEmit     # type check only
 ```
 
+Vitest is configured with `globals: true` — no need to import `describe`, `it`, `expect` in test files. `@testing-library/jest-dom` matchers (e.g., `toBeInTheDocument`) are available via `src/test-setup.ts`.
+
+`vite.config.ts` loads `@uipath/coded-apps-dev/vite` — this plugin injects OAuth at dev time and sets `base: './'` for UiPath Cloud deployment compatibility. Do not remove it.
+
 ---
 
-## Task Status (check TODO.md for latest)
+## Task Status
 
-| Task | Description | Status |
-|------|-------------|--------|
-| T1 | Vite + React scaffold | `[x]` |
-| T2 | Domain types | `[~]` |
-| T3 | SDK singleton | `[ ]` |
-| T4 | Bucket utilities | `[ ]` |
-| T5 | Entity helpers | `[ ]` |
-| T6 | Maestro + Tasks + polling hook | `[ ]` |
-| T7 | App shell + routing | `[ ]` |
-| T8 | Workspace browser + card | `[ ]` |
-| T9 | Workspace detail | `[ ]` |
-| T10 | Document renderer (PDF + DOCX) | `[ ]` |
-| T11 | Highlight layer (mark.js) | `[ ]` |
-| T12 | Review workspace (HITL UI) | `[ ]` |
-| T13 | Admin screens | `[ ]` |
-| T14 | Build + deploy | `[ ]` |
+See `TODO.md` for the authoritative task list. T1 (scaffold) and T2 (domain types) are `[x]` done. The "Current Task for Copilot" section below is updated by Claude Code before each session.
 
 ---
 
@@ -189,147 +132,61 @@ npx tsc --noEmit     # type check only
 
 > **Claude updates this section when assigning the next task. Implement only what is described here.**
 
-### Task 2: Domain Types
+### Task 3: SDK Singleton + Type Fix
 
-**Goal:** Create the three core TypeScript type files. No logic — types only. `npx tsc --noEmit` must pass with zero errors.
-
-**Files to create:**
-- `src/types/workspace.ts`
-- `src/types/template.ts`
-- `src/types/review.ts`
+Two parts: fix a type inconsistency from T2, then build the SDK singleton.
 
 ---
 
-**Step 1 — Create `src/types/workspace.ts`:**
+#### Part A — Fix mode type inconsistency (surgical, types only)
+
+`workspace.ts` defines `ComparisonMode = 'buyer-seller-diff' | 'template-compliance'`.  
+`template.ts` defines `TemplateMode = 'buyer-seller' | 'compliance'` — different values for the same concept.
+
+**Fix:** Delete `TemplateMode` from `template.ts`. Change `Template.comparisonMode` to use `ComparisonMode` imported from `workspace.ts`. Also type `ReviewPayload.mode` in `review.ts` as `ComparisonMode` (import from `workspace.ts`) instead of `string`.
+
+After fix, `npx tsc --noEmit` must still be clean.
+
+---
+
+#### Part B — SDK singleton (`src/lib/sdk.ts`)
+
+**Goal:** Single file that owns the `UiPath` instance. Zero tests needed (SDK is a third-party class — don't mock it). `npx tsc --noEmit` must pass.
+
+**Create `src/lib/sdk.ts`:**
 ```typescript
-export type ComparisonMode = 'buyer-seller-diff' | 'template-compliance';
-export type ComparisonStatus = 'running' | 'awaiting-review' | 'confirmed' | 'rejected';
+import { UiPath } from '@uipath/uipath-typescript';
 
-export interface WorkspaceVersion {
-  versionNumber: number;
-  bucketKey: string;
-  filename: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  fileSizeBytes: number;
-}
+let instance: InstanceType<typeof UiPath> | null = null;
 
-export interface WorkspaceComparison {
-  comparisonId: string;
-  docAVersion: number;
-  docBVersion: number;
-  mode: ComparisonMode;
-  templateId: string;
-  includeVersionHistory: boolean;
-  status: ComparisonStatus;
-  confirmedBy?: string;
-  confirmedAt?: string;
-  rejectionNote?: string;
-  startedAt: string;
-  findingSummary?: {
-    high: number;
-    medium: number;
-    aligned: number;
-    missing: number;
-    modified: number;
-    extra: number;
-  };
-}
-
-export interface ContractWorkspace {
-  id: string;
-  name: string;
-  description: string;
-  defaultTemplateId: string;
-  buyerParty: string;
-  sellerParty: string;
-  contractType: string;
-  ownerId: string;
-  createdAt: string;
-  versions: WorkspaceVersion[];
-  comparisons: WorkspaceComparison[];
+export async function getSDK(): Promise<InstanceType<typeof UiPath>> {
+  if (instance) return instance;
+  instance = new UiPath();
+  await instance.initialize();
+  return instance;
 }
 ```
 
-**Step 2 — Create `src/types/template.ts`:**
-```typescript
-export type TemplateStatus = 'active' | 'draft';
-export type GuidelineStatus = 'indexing' | 'indexed' | 'error';
-export type TemplateMode = 'buyer-seller' | 'compliance';
+That is the entire file. No exports beyond `getSDK`. No error handling — `initialize()` throws if auth fails and that is correct behavior.
 
-export interface Template {
-  id: string;
-  name: string;
-  description: string;
-  bucketKey: string;
-  systemMessage: string;
-  linkedGuidelineIds: string[];
-  comparisonMode: TemplateMode;
-  status: TemplateStatus;
-}
+---
 
-export interface Guideline {
-  id: string;
-  name: string;
-  description: string;
-  bucketKey: string;
-  chunkCount: number;
-  indexingStatus: GuidelineStatus;
-  linkedTemplateIds: string[];
-  uploadedAt: string;
-}
-```
-
-**Step 3 — Create `src/types/review.ts`:**
-
-> CRITICAL: These exact union values are shared with Plan B (Maestro agents). Do not change them.
-
-```typescript
-export type DeviationType = 'high-risk' | 'medium-risk' | 'aligned' | 'missing' | 'modified' | 'extra';
-export type RagStatus = 'HIGH' | 'MEDIUM' | 'OK' | 'MISSING' | 'MODIFIED' | 'EXTRA';
-
-export interface Finding {
-  id: string;
-  clauseRef: string;
-  deviationType: DeviationType;
-  snippetA: string;
-  snippetB?: string;
-  explanation: string;
-  guidelineCitation?: string;
-  insertAfterClause?: string;
-}
-
-export interface ScorecardCategory {
-  name: string;
-  status: RagStatus;
-  summary: string;
-}
-
-export interface ReviewPayload {
-  comparisonId: string;
-  workspaceId: string;
-  mode: string;
-  scorecard: ScorecardCategory[];
-  compliancePercent?: number;
-  findings: Finding[];
-  narrative: string;
-  taskId: string;
-}
-```
-
-**Step 4 — Verify:**
+**Verify:**
 ```bash
 npx tsc --noEmit
 ```
-Expected: no output (zero errors).
+Expected: no output.
 
-**Step 5 — Commit:**
+**Commit (two commits):**
 ```bash
 git add src/types/
-git commit -m "feat: add domain types for workspace, template, review"
+git commit -m "fix: align TemplateMode with ComparisonMode, type ReviewPayload.mode"
+
+git add src/lib/sdk.ts
+git commit -m "feat: add SDK singleton (getSDK)"
 ```
 
-**Done when:** `npx tsc --noEmit` exits clean. Report: list the 3 files created + paste tsc output.
+**Done when:** Two commits made, `npx tsc --noEmit` clean. Report: paste tsc output + both commit hashes.
 
 ---
 

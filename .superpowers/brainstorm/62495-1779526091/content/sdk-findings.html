@@ -1,0 +1,72 @@
+<h2>SDK Findings — Architecture Impact</h2>
+<p class="subtitle">What the TypeScript SDK changes about our design. One key constraint to flag.</p>
+
+<div class="section">
+  <div class="label">What Coded Apps Actually Are</div>
+  <div style="background:var(--surface); border-radius:8px; padding:1rem; margin-top:0.5rem; font-size:0.88rem; line-height:1.9;">
+    Static site hosting on UiPath Automation Cloud. You build a standard <strong>React + Vite</strong> app.
+    The SDK injects OAuth config via meta tags at deploy time — auth is free, zero custom work.
+    Deploys to <code>https://&lt;org&gt;.uipath.host/&lt;appName&gt;</code>.
+    SDK works in browser — calls Maestro, Tasks, Buckets <strong>directly from frontend</strong>.
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">Architecture Simplification</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.5rem;">
+    <div style="background:#dc262618; border-radius:8px; padding:1rem;">
+      <h3 style="margin:0 0 0.5rem; font-size:0.9rem; color:#f87171;">Before (assumed)</h3>
+      <div style="font-size:0.82rem; line-height:2; color:var(--text-secondary);">
+        Coded App<br>
+        → Node.js/Express API<br>
+        → UiPath TS SDK<br>
+        → Maestro / Buckets / Tasks
+      </div>
+    </div>
+    <div style="background:#16a34a18; border-radius:8px; padding:1rem;">
+      <h3 style="margin:0 0 0.5rem; font-size:0.9rem; color:#4ade80;">Now (simplified)</h3>
+      <div style="font-size:0.82rem; line-height:2; color:var(--text-secondary);">
+        Coded App (React + Vite)<br>
+        → UiPath TS SDK (browser)<br>
+        → Maestro / Buckets / Tasks
+      </div>
+    </div>
+  </div>
+  <p style="font-size:0.83rem; color:var(--text-secondary); margin-top:0.75rem;">No separate backend needed. SDK calls UiPath services directly from browser. Future UI swap = different React app or external host, same SDK pattern.</p>
+</div>
+
+<div class="section">
+  <div class="label">Available Samples (relevant to us)</div>
+  <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
+    <div class="component" style="flex:1; min-width:160px;">
+      <strong>process-app-v0</strong>
+      <span>Process trigger + monitor — closest to what we need</span>
+    </div>
+    <div class="component" style="flex:1; min-width:160px;">
+      <strong>process-app-v1</strong>
+      <span>Newer version — start here for patterns</span>
+    </div>
+    <div class="component" style="flex:1; min-width:160px;">
+      <strong>conversational-agent-app</strong>
+      <span>Agent session management patterns</span>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:1.5rem; padding:1rem 1.25rem; background:#d9770618; border-radius:8px; border-left:3px solid #f59e0b;">
+  <div class="label" style="color:#fbbf24;">⚠ Critical Constraint</div>
+  <p style="margin:0.5rem 0 0; font-size:0.88rem; line-height:1.7;">
+    <strong>Coded Apps = Automation Cloud only.</strong> No Automation Suite, no Dedicated deployment.
+    If your org runs on-premise or Dedicated, Coded Apps won't work — we'd fall back to Approach B (self-hosted React app + same SDK).
+    Architecture stays identical, only hosting changes.
+  </p>
+</div>
+
+<div style="margin-top:1.5rem; padding:1rem 1.25rem; background:#2563eb18; border-radius:8px; border-left:3px solid #3b82f6;">
+  <div class="label" style="color:#60a5fa;">Future UI Swap Path</div>
+  <p style="margin:0.5rem 0 0; font-size:0.88rem; line-height:1.7;">
+    Coded App v1 → Custom React app: zero Maestro changes. Just swap the host.
+    Same SDK imports, same service calls, same Maestro process IDs.
+    Works because SDK is browser-native — not tied to UiPath hosting.
+  </p>
+</div>

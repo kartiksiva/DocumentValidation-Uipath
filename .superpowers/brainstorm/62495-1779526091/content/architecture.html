@@ -1,0 +1,151 @@
+<h2>System Architecture</h2>
+<p class="subtitle">Layered design — swap UI layer without touching Maestro pipeline. Click any layer to select it for discussion.</p>
+
+<style>
+  .arch-diagram { display: flex; flex-direction: column; gap: 0.5rem; margin: 1.5rem 0; }
+  .arch-layer { border-radius: 8px; border: 1px solid var(--border); overflow: hidden; cursor: pointer; transition: box-shadow 0.2s; }
+  .arch-layer:hover { box-shadow: 0 0 0 2px #2563eb88; }
+  .arch-layer.selected { box-shadow: 0 0 0 2px #2563eb; }
+  .layer-header { padding: 0.6rem 1rem; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; }
+  .layer-body { padding: 0.75rem 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .component { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.82rem; }
+  .component strong { display: block; margin-bottom: 0.2rem; }
+  .component span { color: var(--text-secondary); font-size: 0.78rem; }
+  .arrow { text-align: center; color: var(--text-secondary); font-size: 1.2rem; line-height: 1; }
+  .tag { font-size: 0.7rem; padding: 1px 7px; border-radius: 4px; font-weight: 500; margin-left: 6px; vertical-align: middle; }
+  .tag-swap { background: #2563eb22; color: #60a5fa; }
+  .tag-core { background: #16a34a22; color: #4ade80; }
+</style>
+
+<div class="arch-diagram">
+
+  <!-- UI Layer -->
+  <div class="arch-layer" data-choice="ui" onclick="toggleSelect(this)" style="border-color:#2563eb44;">
+    <div class="layer-header" style="background:#2563eb18; color:#60a5fa;">
+      🖥️ UI Layer <span class="tag tag-swap">Swappable</span>
+    </div>
+    <div class="layer-body">
+      <div class="component">
+        <strong>UiPath Coded App (v1)</strong>
+        <span>React-based, hosted on UiPath Platform</span>
+      </div>
+      <div class="component">
+        <strong>Upload Screen</strong>
+        <span>PDF/Word, mode selector, version picker</span>
+      </div>
+      <div class="component">
+        <strong>Results Screen</strong>
+        <span>Scorecard + Diff + Summary + Confirm/Reject</span>
+      </div>
+      <div class="component" style="border-style:dashed; opacity:0.6;">
+        <strong>Custom React App (future)</strong>
+        <span>Drop-in replacement via same API</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">↕ REST / SDK calls</div>
+
+  <!-- API Layer -->
+  <div class="arch-layer" data-choice="api" onclick="toggleSelect(this)" style="border-color:#7c3aed44;">
+    <div class="layer-header" style="background:#7c3aed18; color:#a78bfa;">
+      ⚡ API / Integration Layer <span class="tag tag-core">UI-Agnostic</span>
+    </div>
+    <div class="layer-body">
+      <div class="component">
+        <strong>Node.js / Express API</strong>
+        <span>Typed endpoints, input validation</span>
+      </div>
+      <div class="component">
+        <strong>UiPath TS SDK</strong>
+        <span>@uipath/uipath-typescript v1.3.8</span>
+      </div>
+      <div class="component">
+        <strong>Bucket Handler</strong>
+        <span>Upload docs → UiPath Buckets, version tracking</span>
+      </div>
+      <div class="component">
+        <strong>Webhook / Polling</strong>
+        <span>Listen for Maestro process completion</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">↕ Maestro SDK</div>
+
+  <!-- Maestro Layer -->
+  <div class="arch-layer" data-choice="maestro" onclick="toggleSelect(this)" style="border-color:#d97706aa;">
+    <div class="layer-header" style="background:#d9770618; color:#fbbf24;">
+      🎯 Maestro Orchestration Layer <span class="tag tag-core">Core</span>
+    </div>
+    <div class="layer-body">
+      <div class="component">
+        <strong>ContractComparisonProcess</strong>
+        <span>Main Maestro process entry point</span>
+      </div>
+      <div class="component">
+        <strong>Mode Router</strong>
+        <span>Buyer/Seller diff vs Template compliance</span>
+      </div>
+      <div class="component">
+        <strong>Human Task</strong>
+        <span>Business user confirm / reject step</span>
+      </div>
+      <div class="component">
+        <strong>Version History Gate</strong>
+        <span>Optional: fetch prior versions from Buckets</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">↕ Agent calls</div>
+
+  <!-- Agent Pipeline -->
+  <div class="arch-layer" data-choice="agents" onclick="toggleSelect(this)" style="border-color:#16a34a44;">
+    <div class="layer-header" style="background:#16a34a18; color:#4ade80;">
+      🤖 AI Agent Pipeline
+    </div>
+    <div class="layer-body">
+      <div class="component">
+        <strong>Agent 1: Extractor</strong>
+        <span>DU → text + structure from PDF/Word</span>
+      </div>
+      <div class="component">
+        <strong>Agent 2: Comparator</strong>
+        <span>LLM — clause-by-clause diff + gap analysis</span>
+      </div>
+      <div class="component">
+        <strong>Agent 3: Reviewer</strong>
+        <span>Generates scorecard + diff + narrative</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">↕</div>
+
+  <!-- Storage -->
+  <div class="arch-layer" data-choice="storage" onclick="toggleSelect(this)" style="border-color:#64748b44;">
+    <div class="layer-header" style="background:#64748b18; color:#94a3b8;">
+      🗄️ Storage
+    </div>
+    <div class="layer-body">
+      <div class="component">
+        <strong>UiPath Buckets</strong>
+        <span>Contract files + version history</span>
+      </div>
+      <div class="component">
+        <strong>Process Results</strong>
+        <span>Comparison outputs, audit log</span>
+      </div>
+      <div class="component">
+        <strong>Assets</strong>
+        <span>LLM config, template docs, thresholds</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:1rem; padding:0.75rem 1rem; background:var(--surface); border-radius:8px; font-size:0.85rem; color:var(--text-secondary);">
+  Key principle: Maestro + Agent Pipeline know nothing about the UI. All UI changes stay above the API layer.
+</div>

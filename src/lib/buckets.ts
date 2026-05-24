@@ -1,11 +1,17 @@
 import { getSDK } from './sdk';
 
-const BUCKET_NAME = 'contract-ai';
-
 type VersionKeyParams = { workspaceId: string; versionNumber: number; filename: string };
 type ComparisonKeyParams = { workspaceId: string; comparisonId: string; artifact: string };
 type TemplateKeyParams = { templateId: string; filename: string };
 type GuidelineKeyParams = { guidelineId: string; filename: string };
+
+let _bucketId = 0;
+let _folderId = 0;
+
+export function configureBucket(bucketId: number, folderId: number): void {
+  _bucketId = bucketId;
+  _folderId = folderId;
+}
 
 export function buildBucketKey(
   params: VersionKeyParams | ComparisonKeyParams | TemplateKeyParams | GuidelineKeyParams
@@ -24,12 +30,14 @@ export function buildBucketKey(
 
 export async function uploadFile(key: string, file: File): Promise<void> {
   const sdk = await getSDK();
-  await sdk.Buckets.upload({ bucketName: BUCKET_NAME, key, file });
+  await sdk.buckets.uploadFile({ bucketId: _bucketId, folderId: _folderId, path: key, content: file });
 }
 
 export async function downloadFile(key: string): Promise<Blob> {
   const sdk = await getSDK();
-  return sdk.Buckets.download({ bucketName: BUCKET_NAME, key });
+  const { uri } = await sdk.buckets.getReadUri({ bucketId: _bucketId, folderId: _folderId, path: key });
+  const response = await fetch(uri);
+  return response.blob();
 }
 
 export async function uploadJSON(key: string, data: unknown): Promise<void> {

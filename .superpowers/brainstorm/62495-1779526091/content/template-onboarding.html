@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Template & Context Management</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 1.5rem; font-size: 0.82rem; }
+
+  .app-shell { display: grid; grid-template-columns: 200px 1fr; min-height: 680px; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px #0000000d; background: white; }
+
+  /* App nav */
+  .app-nav { background: #1e293b; display: flex; flex-direction: column; padding: 1rem 0; }
+  .nav-logo { padding: 0 1rem 1rem; border-bottom: 1px solid #334155; margin-bottom: 0.5rem; }
+  .nav-logo-text { font-size: 0.85rem; font-weight: 800; color: white; }
+  .nav-logo-sub { font-size: 0.65rem; color: #64748b; }
+  .nav-item { padding: 0.5rem 1rem; font-size: 0.75rem; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; border-left: 3px solid transparent; }
+  .nav-item:hover { background: #334155; color: #e2e8f0; }
+  .nav-item.active { color: white; background: #1d4ed820; border-left-color: #3b82f6; }
+  .nav-section { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; padding: 0.75rem 1rem 0.25rem; }
+
+  /* Main content */
+  .main { display: flex; flex-direction: column; overflow: hidden; }
+  .main-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: white; }
+  .main-title { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+  .main-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+  .btn-primary { background: #2563eb; color: white; border: none; border-radius: 7px; padding: 0.45rem 1rem; font-size: 0.76rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }
+
+  .main-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1.5px solid #e2e8f0; margin-bottom: 0; }
+  .tab { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
+  .tab.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+  /* Template cards */
+  .template-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+  .template-card { border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: white; }
+  .tc-header { padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+  .tc-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .tc-meta { flex: 1; }
+  .tc-name { font-size: 0.83rem; font-weight: 700; color: #1e293b; }
+  .tc-desc { font-size: 0.7rem; color: #64748b; margin-top: 1px; }
+  .tc-badges { display: flex; gap: 0.4rem; align-items: center; }
+  .badge { font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+  .badge-active { background: #dcfce7; color: #16a34a; }
+  .badge-docs { background: #dbeafe; color: #2563eb; }
+  .badge-type { background: #f3f4f6; color: #6b7280; }
+  .tc-body { padding: 0 1rem 0.75rem; border-top: 1px solid #f1f5f9; background: #fafafa; }
+
+  /* System message editor */
+  .field-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; margin: 0.65rem 0 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+  .system-msg-box { background: white; border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 0.6rem 0.75rem; font-size: 0.73rem; color: #334155; line-height: 1.65; font-family: 'SF Mono', 'Fira Code', monospace; min-height: 64px; border-left: 3px solid #8b5cf6; }
+  .context-docs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+  .context-doc-chip { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.25rem 0.6rem; font-size: 0.7rem; color: #475569; display: flex; align-items: center; gap: 0.35rem; }
+  .context-doc-chip .remove { color: #cbd5e1; cursor: pointer; font-size: 0.65rem; }
+  .add-chip { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0.25rem 0.6rem; font-size: 0.7rem; color: #94a3b8; cursor: pointer; }
+  .add-chip:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+
+  /* Upload zone */
+  .upload-zone { border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 1.5rem; text-align: center; background: #fafafa; cursor: pointer; transition: all 0.15s; }
+  .upload-zone:hover { border-color: #2563eb; background: #eff6ff; }
+  .upload-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+  .upload-text { font-size: 0.78rem; font-weight: 600; color: #475569; }
+  .upload-sub { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; }
+
+  /* Guideline section */
+  .section-card { border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: white; }
+  .sc-header { padding: 0.75rem 1rem; background: #fafafa; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+  .sc-title { font-size: 0.83rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; }
+  .sc-body { padding: 1rem; }
+  .guideline-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; }
+  .guideline-row:last-child { border-bottom: none; }
+  .gl-icon { width: 28px; height: 28px; border-radius: 6px; background: #fef3c7; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+  .gl-meta { flex: 1; }
+  .gl-name { font-size: 0.76rem; font-weight: 600; color: #1e293b; }
+  .gl-sub { font-size: 0.68rem; color: #94a3b8; }
+  .gl-status { font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+  .status-indexed { background: #dcfce7; color: #16a34a; }
+  .status-processing { background: #fef3c7; color: #d97706; }
+  .gl-action { font-size: 0.7rem; color: #94a3b8; cursor: pointer; }
+  .gl-action:hover { color: #ef4444; }
+
+  /* Info box */
+  .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.73rem; color: #1d4ed8; line-height: 1.65; display: flex; gap: 0.5rem; }
+  .info-icon { flex-shrink: 0; font-size: 0.9rem; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Nav -->
+  <div class="app-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-text">ContractAI</div>
+      <div class="nav-logo-sub">Powered by UiPath Maestro</div>
+    </div>
+    <div class="nav-section">Workspace</div>
+    <div class="nav-item">📄 New Comparison</div>
+    <div class="nav-item">📋 My Reviews</div>
+    <div class="nav-item">📁 Document Library</div>
+    <div class="nav-section">Admin</div>
+    <div class="nav-item active">🗂 Templates</div>
+    <div class="nav-item">📚 Guidelines</div>
+    <div class="nav-item">⚙️ Settings</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title">Template & Context Management</div>
+        <div class="main-sub">Configure templates, system prompts, and grounding documents</div>
+      </div>
+      <button class="btn-primary">+ New Template</button>
+    </div>
+
+    <div class="main-body">
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active">Templates</div>
+        <div class="tab">Guideline Documents</div>
+        <div class="tab">Document Library</div>
+      </div>
+
+      <!-- Info box -->
+      <div class="info-box">
+        <div class="info-icon">ℹ</div>
+        <div>Each template has its own <strong>system message</strong> — the AI instruction set used when comparing against it. Attach <strong>guideline documents</strong> (e.g. GAFTA, Incoterms) to ground the AI's analysis with industry-standard definitions.</div>
+      </div>
+
+      <!-- Template cards -->
+      <div class="template-grid">
+
+        <!-- Template 1: MSA -->
+        <div class="template-card">
+          <div class="tc-header">
+            <div class="tc-icon" style="background:#eff6ff;">📄</div>
+            <div class="tc-meta">
+              <div class="tc-name">Standard MSA (Master Services Agreement)</div>
+              <div class="tc-desc">Default vendor services template · 12 standard clauses</div>
+            </div>
+            <div class="tc-badges">
+              <span class="badge badge-active">Active</span>
+              <span class="badge badge-docs">3 guidelines</span>
+              <span class="badge badge-type">Compliance</span>
+            </div>
+          </div>
+          <div class="tc-body">
+            <div class="field-label">🤖 System Message <span style="color:#8b5cf6; font-size:0.58rem; font-weight:600;">LLM INSTRUCTION</span></div>
+            <div class="system-msg-box">You are a contract compliance analyst reviewing vendor agreements against the Standard MSA template. Focus on: liability caps (standard is 2× annual fees), IP ownership (must be work-for-hire assigned to Client), payment terms (Net-30 standard). Flag any clause that deviates materially. Use plain English suitable for procurement managers. Severity: HIGH for missing required clauses, MEDIUM for modified terms, LOW for extra clauses.</div>
+            <div class="field-label">📚 Grounding Documents</div>
+            <div class="context-docs">
+              <div class="context-doc-chip">📘 UCC Article 2 <span class="remove">×</span></div>
+              <div class="context-doc-chip">📘 GDPR Data Processing <span class="remove">×</span></div>
+              <div class="context-doc-chip">📘 Company Legal Policy v3 <span class="remove">×</span></div>
+              <div class="add-chip">+ Add guideline</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template 2: GAFTA -->
+        <div class="template-card" style="border-color:#fde68a;">
+          <div class="tc-header">
+            <div class="tc-icon" style="background:#fffbeb;">🌾</div>
+            <div class="tc-meta">
+              <div class="tc-name">GAFTA 100 — Grain Trade Contract</div>
+              <div class="tc-desc">Grain and Feed Trade Association standard · CIF/FOB commodities</div>
+            </div>
+            <div class="tc-badges">
+              <span class="badge badge-active">Active</span>
+              <span class="badge badge-docs">5 guidelines</span>
+              <span class="badge" style="background:#fef3c7;color:#b45309;">Trade</span>
+            </div>
+          </div>
+          <div class="tc-body">
+            <div class="field-label">🤖 System Message <span style="color:#8b5cf6; font-size:0.58rem; font-weight:600;">LLM INSTRUCTION</span></div>
+            <div class="system-msg-box">You are a commodities trade compliance specialist reviewing contracts against GAFTA 100 standard terms. Key areas: delivery terms (Incoterms 2020 CIF/FOB), quality specifications (moisture, protein, impurities per GAFTA sampling rules), arbitration (must specify GAFTA arbitration London), force majeure (aligned to GAFTA clause 22), payment (irrevocable LC standard). Cross-reference GAFTA 125 arbitration rules when dispute clauses deviate. Flag deviations with commercial impact on buyer/seller.</div>
+            <div class="field-label">📚 Grounding Documents</div>
+            <div class="context-docs">
+              <div class="context-doc-chip">📘 GAFTA 100 Full Terms <span class="remove">×</span></div>
+              <div class="context-doc-chip">📘 GAFTA 125 Arbitration Rules <span class="remove">×</span></div>
+              <div class="context-doc-chip">📘 Incoterms 2020 <span class="remove">×</span></div>
+              <div class="context-doc-chip">📘 GAFTA Sampling Rules <span class="remove">×</span></div>
+              <div class="context-doc-chip">📘 UCP 600 (LC rules) <span class="remove">×</span></div>
+              <div class="add-chip">+ Add guideline</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add new template -->
+        <div class="upload-zone">
+          <div class="upload-icon">📂</div>
+          <div class="upload-text">Upload New Template</div>
+          <div class="upload-sub">PDF or DOCX · Then configure system message and grounding docs</div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

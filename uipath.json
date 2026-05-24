@@ -1,5 +1,5 @@
 {
-  "clientId": "YOUR_CLIENT_ID",
+  "clientId": "9e930644-509a-46d2-b390-1dfe1963c4d9",
   "scopes": [
     "OR.Buckets",
     "OR.Entities",
@@ -7,7 +7,7 @@
     "OR.Maestro",
     "OR.Jobs"
   ],
-  "organization": "YOUR_ORG_NAME",
-  "tenant": "YOUR_TENANT_NAME",
+  "organization": "kartizpujinj",
+  "tenant": "DefaultTenant",
   "baseUrl": "https://cloud.uipath.com"
 }

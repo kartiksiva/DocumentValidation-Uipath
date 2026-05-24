@@ -118,8 +118,10 @@ import { useTaskPolling } from './hooks/useTaskPolling';
 
 ## UiPath Assets (Plan B)
 
-All configurable thresholds live in Orchestrator Assets — never hardcode:
-`COMPARATOR_BATCH_SIZE` (default 7), `RAG_TOP_K` (default 5), `DU_HIERARCHY_CONFIDENCE_THRESHOLD` (default 0.75), `RISK_THRESHOLD_HIGH`, `RISK_THRESHOLD_MEDIUM`, `VECTOR_STORE_ENDPOINT`, `VECTOR_STORE_KEY`, `LLM_MODEL`, `LLM_ENDPOINT`.
+All configurable thresholds live in Orchestrator Assets (Shared folder) — never hardcode:
+`COMPARATOR_BATCH_SIZE` (7), `RAG_TOP_K` (5), `DU_HIERARCHY_CONFIDENCE_THRESHOLD` (0.75), `RISK_THRESHOLD_HIGH` (0.7), `RISK_THRESHOLD_MEDIUM` (0.4), `LLM_MODEL` (gpt-4o), `CONTEXT_GROUNDING_INDEX_NAME` (contract-guidelines).
+
+**No Azure AI Search.** RAG uses UiPath Context Grounding: index `contract-guidelines` in Shared folder, sourced from `contract-guidelines` storage bucket. Agent 2 calls `sdk.context_grounding.unified_search_async(index_name=asset("CONTEXT_GROUNDING_INDEX_NAME"), ...)`. **No external LLM endpoint.** LLM uses UiPath managed `gpt-4o` via `UiPathAzureChatOpenAI()` — no custom auth or endpoint config.
 
 ## Deployment
 

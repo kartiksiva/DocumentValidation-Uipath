@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workspace Browser</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 1.5rem; font-size: 0.82rem; color: #1e293b; }
+
+  .app-shell { display: grid; grid-template-columns: 200px 1fr; min-height: 700px; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px #0000000d; background: white; }
+
+  /* Nav — clean, flat */
+  .app-nav { background: #1e293b; display: flex; flex-direction: column; padding: 1rem 0; }
+  .nav-logo { padding: 0 1rem 1rem; border-bottom: 1px solid #334155; margin-bottom: 0.5rem; }
+  .nav-logo-text { font-size: 0.85rem; font-weight: 800; color: white; }
+  .nav-logo-sub { font-size: 0.65rem; color: #64748b; }
+  .nav-item { padding: 0.5rem 1rem; font-size: 0.75rem; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-left: 3px solid transparent; }
+  .nav-item:hover { background: #334155; color: #e2e8f0; }
+  .nav-item.active { color: white; background: #1d4ed820; border-left-color: #3b82f6; }
+  .nav-item-left { display: flex; align-items: center; gap: 0.5rem; }
+  .nav-badge { font-size: 0.6rem; background: #f59e0b; color: #1e293b; border-radius: 8px; padding: 1px 5px; font-weight: 800; }
+  .nav-section { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; padding: 0.75rem 1rem 0.25rem; }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; overflow: hidden; }
+  .main-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+  .main-title { font-size: 0.95rem; font-weight: 700; }
+  .main-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+  .btn-primary { background: #2563eb; color: white; border: none; border-radius: 7px; padding: 0.45rem 1rem; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
+
+  .main-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Toolbar */
+  .toolbar { display: flex; gap: 0.6rem; align-items: center; }
+  .search-box { flex: 1; display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 0.35rem 0.75rem; gap: 0.4rem; }
+  .search-box input { border: none; background: transparent; font-size: 0.76rem; color: #334155; outline: none; flex: 1; }
+  .search-box input::placeholder { color: #94a3b8; }
+  .filter-btn { background: white; border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 0.35rem 0.75rem; font-size: 0.74rem; font-weight: 600; color: #475569; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+  .filter-btn.active { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+  .view-toggle { display: flex; border: 1.5px solid #e2e8f0; border-radius: 7px; overflow: hidden; }
+  .vt-btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; cursor: pointer; background: white; color: #94a3b8; border: none; }
+  .vt-btn.active { background: #f1f5f9; color: #1e293b; }
+
+  /* Stats row */
+  .stats-row { display: flex; gap: 1rem; }
+  .stat-chip { background: white; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 0.9rem; display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+  .stat-num { font-size: 1.1rem; font-weight: 800; color: #1e293b; }
+  .stat-lbl { font-size: 0.62rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
+  .stat-chip.highlight { border-color: #fde68a; background: #fffdf8; }
+  .stat-chip.highlight .stat-num { color: #d97706; }
+
+  /* Workspace card grid */
+  .ws-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+
+  .ws-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 1rem; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; display: flex; flex-direction: column; gap: 0.6rem; }
+  .ws-card:hover { box-shadow: 0 4px 16px #0000001a; border-color: #bfdbfe; }
+  .ws-card.has-pending { border-left: 3px solid #f59e0b; }
+
+  .wc-top { display: flex; align-items: flex-start; gap: 0.6rem; }
+  .wc-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .wc-meta { flex: 1; min-width: 0; }
+  .wc-name { font-size: 0.82rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wc-parties { font-size: 0.68rem; color: #64748b; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .wc-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .tag { font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+  .tag-template { background: #fef3c7; color: #b45309; }
+  .tag-type { background: #f0fdf4; color: #15803d; }
+
+  .wc-stats { display: flex; gap: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #f1f5f9; }
+  .wcs { font-size: 0.69rem; color: #94a3b8; display: flex; flex-direction: column; align-items: center; }
+  .wcs strong { font-size: 0.82rem; font-weight: 700; color: #475569; }
+
+  .wc-footer { display: flex; align-items: center; justify-content: space-between; }
+  .wc-date { font-size: 0.67rem; color: #94a3b8; }
+  .pending-pill { font-size: 0.62rem; padding: 1px 7px; border-radius: 8px; font-weight: 700; background: #fef3c7; color: #d97706; }
+  .no-pending { font-size: 0.62rem; color: #dcfce7; background: #dcfce7; color: #16a34a; padding: 1px 7px; border-radius: 8px; font-weight: 700; }
+
+  /* New workspace card */
+  .ws-card-new { border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 1rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; min-height: 140px; color: #94a3b8; transition: all 0.15s; }
+  .ws-card-new:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+  .ws-card-new-icon { font-size: 1.5rem; }
+  .ws-card-new-text { font-size: 0.76rem; font-weight: 600; }
+  .ws-card-new-sub { font-size: 0.68rem; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Nav — flat, no workspace items -->
+  <div class="app-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-text">ContractAI</div>
+      <div class="nav-logo-sub">Powered by UiPath Maestro</div>
+    </div>
+    <div class="nav-section">Workspace</div>
+    <div class="nav-item active">
+      <div class="nav-item-left">📁 My Workspaces</div>
+      <span class="nav-badge">2</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-item-left">▶ New Comparison</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-item-left">🕑 My Reviews</div>
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-section">Admin</div>
+    <div class="nav-item"><div class="nav-item-left">🗂 Templates</div></div>
+    <div class="nav-item"><div class="nav-item-left">📚 Guidelines</div></div>
+    <div class="nav-item"><div class="nav-item-left">⚙️ Settings</div></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title">My Workspaces</div>
+        <div class="main-sub">All contract workspaces · click to open</div>
+      </div>
+      <button class="btn-primary">+ New Workspace</button>
+    </div>
+
+    <div class="main-body">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-chip"><div class="stat-num">8</div><div class="stat-lbl">Workspaces</div></div>
+        <div class="stat-chip"><div class="stat-num">24</div><div class="stat-lbl">Versions</div></div>
+        <div class="stat-chip"><div class="stat-num">31</div><div class="stat-lbl">Comparisons</div></div>
+        <div class="stat-chip highlight"><div class="stat-num" style="color:#d97706;">5</div><div class="stat-lbl">Pending Review</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span style="color:#94a3b8;">🔍</span>
+          <input type="text" placeholder="Search workspaces, parties, contract type…" />
+        </div>
+        <div class="filter-btn active">All</div>
+        <div class="filter-btn">⏳ Pending</div>
+        <div class="filter-btn">🗂 MSA</div>
+        <div class="filter-btn">🌾 GAFTA</div>
+        <div class="filter-btn">📋 NDA</div>
+        <div class="view-toggle">
+          <button class="vt-btn active">⊞</button>
+          <button class="vt-btn">☰</button>
+        </div>
+      </div>
+
+      <!-- Workspace grid -->
+      <div class="ws-grid">
+
+        <!-- 1 -->
+        <div class="ws-card has-pending">
+          <div class="wc-top">
+            <div class="wc-icon" style="background:#eff6ff;">📁</div>
+            <div class="wc-meta">
+              <div class="wc-name">Acme Services MSA</div>
+              <div class="wc-parties">Buyer Corp → Acme Ltd</div>
+            </div>
+          </div>
+          <div class="wc-tags">
+            <span class="tag tag-template">Standard MSA</span>
+            <span class="tag tag-type">Services</span>
+          </div>
+          <div class="wc-stats">
+            <div class="wcs"><strong>4</strong>versions</div>
+            <div class="wcs"><strong>6</strong>runs</div>
+            <div class="wcs"><strong>2</strong>confirmed</div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-date">Last activity: 21 May 2026</span>
+            <span class="pending-pill">2 pending</span>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="ws-card has-pending">
+          <div class="wc-top">
+            <div class="wc-icon" style="background:#fffbeb;">📁</div>
+            <div class="wc-meta">
+              <div class="wc-name">GAFTA Grain Contract #447</div>
+              <div class="wc-parties">AgriTrade Co → GrainEx Ltd</div>
+            </div>
+          </div>
+          <div class="wc-tags">
+            <span class="tag tag-template">GAFTA 100</span>
+            <span class="tag tag-type">Commodities</span>
+          </div>
+          <div class="wc-stats">
+            <div class="wcs"><strong>2</strong>versions</div>
+            <div class="wcs"><strong>3</strong>runs</div>
+            <div class="wcs"><strong>1</strong>confirmed</div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-date">Last activity: 20 May 2026</span>
+            <span class="pending-pill">2 pending</span>
+          </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="ws-card">
+          <div class="wc-top">
+            <div class="wc-icon" style="background:#f0fdf4;">📁</div>
+            <div class="wc-meta">
+              <div class="wc-name">Vendor NDA 2026</div>
+              <div class="wc-parties">InternalCo → Tech Vendor X</div>
+            </div>
+          </div>
+          <div class="wc-tags">
+            <span class="tag tag-template">Standard NDA</span>
+            <span class="tag tag-type">Confidentiality</span>
+          </div>
+          <div class="wc-stats">
+            <div class="wcs"><strong>2</strong>versions</div>
+            <div class="wcs"><strong>2</strong>runs</div>
+            <div class="wcs"><strong>2</strong>confirmed</div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-date">Last activity: 15 May 2026</span>
+            <span class="no-pending">✓ All clear</span>
+          </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="ws-card has-pending">
+          <div class="wc-top">
+            <div class="wc-icon" style="background:#fdf4ff;">📁</div>
+            <div class="wc-meta">
+              <div class="wc-name">SaaS Platform License</div>
+              <div class="wc-parties">Enterprise Co → SaaSCo Inc</div>
+            </div>
+          </div>
+          <div class="wc-tags">
+            <span class="tag tag-template">Standard MSA</span>
+            <span class="tag tag-type">Software License</span>
+          </div>
+          <div class="wc-stats">
+            <div class="wcs"><strong>3</strong>versions</div>
+            <div class="wcs"><strong>4</strong>runs</div>
+            <div class="wcs"><strong>3</strong>confirmed</div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-date">Last activity: 12 May 2026</span>
+            <span class="pending-pill">1 pending</span>
+          </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="ws-card">
+          <div class="wc-top">
+            <div class="wc-icon" style="background:#fff1f2;">📁</div>
+            <div class="wc-meta">
+              <div class="wc-name">Construction Works Contract</div>
+              <div class="wc-parties">BuildCo → SubContractor Y</div>
+            </div>
+          </div>
+          <div class="wc-tags">
+            <span class="tag tag-template">FIDIC Silver</span>
+            <span class="tag tag-type">Construction</span>
+          </div>
+          <div class="wc-stats">
+            <div class="wcs"><strong>1</strong>versions</div>
+            <div class="wcs"><strong>2</strong>runs</div>
+            <div class="wcs"><strong>2</strong>confirmed</div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-date">Last activity: 5 May 2026</span>
+            <span class="no-pending">✓ All clear</span>
+          </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="ws-card">
+          <div class="wc-top">
+            <div class="wc-icon" style="background:#f0fdf4;">📁</div>
+            <div class="wc-meta">
+              <div class="wc-name">Annual Procurement Frame</div>
+              <div class="wc-parties">ProcureCo → SupplierNet</div>
+            </div>
+          </div>
+          <div class="wc-tags">
+            <span class="tag tag-template">Standard MSA</span>
+            <span class="tag tag-type">Procurement</span>
+          </div>
+          <div class="wc-stats">
+            <div class="wcs"><strong>2</strong>versions</div>
+            <div class="wcs"><strong>4</strong>runs</div>
+            <div class="wcs"><strong>4</strong>confirmed</div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-date">Last activity: 30 Apr 2026</span>
+            <span class="no-pending">✓ All clear</span>
+          </div>
+        </div>
+
+        <!-- New workspace -->
+        <div class="ws-card-new">
+          <div class="ws-card-new-icon">📂</div>
+          <div class="ws-card-new-text">New Workspace</div>
+          <div class="ws-card-new-sub">Start a new contract folder</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

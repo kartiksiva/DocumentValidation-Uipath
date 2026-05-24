@@ -1,0 +1,99 @@
+<h2>Architecture Approaches</h2>
+<p class="subtitle">Three ways to build the document comparison solution. Click to select your preferred approach.</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>UiPath Coded App + Maestro <span style="font-size:0.75rem; background:#2563eb22; color:#60a5fa; padding:2px 8px; border-radius:4px; margin-left:8px;">Recommended</span></h3>
+      <p>Build a UiPath Coded App (React-based, hosted on UiPath Platform) as the UI. Maestro orchestrates the full comparison pipeline. Human task sent back to same app for user confirmation.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.75rem; font-size:0.82rem;">
+        <div style="background:#16a34a18; border-radius:6px; padding:0.5rem;">
+          <strong style="color:#4ade80;">Pros</strong>
+          <ul style="margin:0.3rem 0 0; padding-left:1rem; line-height:1.8;">
+            <li>Native UiPath ecosystem</li>
+            <li>Maestro human tasks built-in</li>
+            <li>No external hosting</li>
+            <li>Auth via UiPath Identity</li>
+          </ul>
+        </div>
+        <div style="background:#dc262618; border-radius:6px; padding:0.5rem;">
+          <strong style="color:#f87171;">Cons</strong>
+          <ul style="margin:0.3rem 0 0; padding-left:1rem; line-height:1.8;">
+            <li>Coded Apps = more dev work</li>
+            <li>Deployment via UiPath Platform</li>
+            <li>Limited to platform features</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-secondary);">
+        Stack: UiPath Coded App → Maestro Process → Document Understanding → LLM → Human Task → Coded App confirm
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Custom Web App (React/Next.js) + UiPath SDK + Maestro</h3>
+      <p>Standalone web app (React + TypeScript, builds on existing project setup). TypeScript SDK triggers Maestro. Full control over UI — rich diff viewer, scorecard, narrative — all custom rendered.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.75rem; font-size:0.82rem;">
+        <div style="background:#16a34a18; border-radius:6px; padding:0.5rem;">
+          <strong style="color:#4ade80;">Pros</strong>
+          <ul style="margin:0.3rem 0 0; padding-left:1rem; line-height:1.8;">
+            <li>Full UI/UX control</li>
+            <li>Rich diff visualization</li>
+            <li>Leverages existing TS project</li>
+            <li>Can integrate any library</li>
+          </ul>
+        </div>
+        <div style="background:#dc262618; border-radius:6px; padding:0.5rem;">
+          <strong style="color:#f87171;">Cons</strong>
+          <ul style="margin:0.3rem 0 0; padding-left:1rem; line-height:1.8;">
+            <li>Need separate hosting</li>
+            <li>Build own auth layer</li>
+            <li>More infrastructure work</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-secondary);">
+        Stack: React frontend → Node/Express API → UiPath TS SDK → Maestro → webhook callback → frontend
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Lightweight Trigger App + Action Center + Maestro</h3>
+      <p>Minimal custom UI for document upload only. Maestro handles orchestration. UiPath Action Center handles human task confirmation UI. Least custom code, fastest to ship.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.75rem; font-size:0.82rem;">
+        <div style="background:#16a34a18; border-radius:6px; padding:0.5rem;">
+          <strong style="color:#4ade80;">Pros</strong>
+          <ul style="margin:0.3rem 0 0; padding-left:1rem; line-height:1.8;">
+            <li>Fastest to build</li>
+            <li>Action Center = no UI work</li>
+            <li>Proven human task flow</li>
+          </ul>
+        </div>
+        <div style="background:#dc262618; border-radius:6px; padding:0.5rem;">
+          <strong style="color:#f87171;">Cons</strong>
+          <ul style="margin:0.3rem 0 0; padding-left:1rem; line-height:1.8;">
+            <li>Action Center UI = fixed/generic</li>
+            <li>Poor rich diff display</li>
+            <li>Split UX (two different apps)</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-secondary);">
+        Stack: Simple upload form → Maestro → DU + LLM → Action Center task → confirmation
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:1.5rem; padding:1rem; background:var(--surface); border-radius:8px; border-left:3px solid #2563eb; font-size:0.9rem;">
+  <strong>My recommendation: Option A</strong> — stays fully in UiPath ecosystem, Maestro human tasks integrate natively with Coded Apps, no external hosting needed, and Coded Apps give enough flexibility for the scorecard + diff + summary UI.
+</div>

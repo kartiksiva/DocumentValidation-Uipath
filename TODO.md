@@ -29,7 +29,7 @@ Reference: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 | Status | Task | Notes |
 |--------|------|-------|
 | `[x]` | **T1** Vite + React scaffold | `npm install`, `vite.config.ts`, `index.html`, `tailwind`, `tsconfig.json` |
-| `[ ]` | **T2** Domain types | `src/types/workspace.ts`, `template.ts`, `review.ts` |
+| `[x]` | **T2** Domain types | `src/types/workspace.ts`, `template.ts`, `review.ts` |
 | `[ ]` | **T3** SDK singleton | `src/lib/sdk.ts` + test. Singleton pattern — never `new UiPath()` outside this file |
 | `[ ]` | **T4** Bucket utilities | `src/lib/buckets.ts` + tests for `buildBucketKey()` |
 | `[ ]` | **T5** Entity helpers | `src/lib/entities.ts` — CRUD for Workspace, Template, Guideline |
@@ -52,8 +52,8 @@ Reference: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md`
 | Status | Task | Notes |
 |--------|------|-------|
 | `[!]` | **T1** Studio project setup | Need UiPath Studio installed. Two projects: `ContractComparisonAgent` + `GuidelineIndexer` |
-| `[!]` | **T2** Assets + Orchestrator config | Need Orchestrator admin access. 10 Assets to create. AI Center LLM connection |
-| `[!]` | **T3** Azure AI Search index | Need Azure subscription. Index name: `contract-guidelines`. Schema in plan |
+| `[x]` | **T2** Assets + Orchestrator config | 7 assets created in Shared folder. Buckets: contract-workspaces, contract-guidelines |
+| `[x]` | **T3** Azure AI Search index | Replaced by UiPath Context Grounding. Index `contract-guidelines` created in Shared folder from contract-guidelines bucket |
 | `[ ]` | **T4** Helper classes | `BucketClient.cs`, `AzureSearchClient.cs`, `LlmClient.cs` |
 | `[ ]` | **T5** JSON schemas | `ClauseJSON`, `FindingsJSON`, `ReviewPayload` schemas in `data/` |
 | `[ ]` | **T6** Agent 1 — Extractor | `ExtractClauses.cs` — DU + LLM fallback (threshold: 0.75) |
@@ -69,8 +69,8 @@ Reference: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md`
 
 | Status | Decision | Options | Notes |
 |--------|----------|---------|-------|
-| `[!]` | LLM model | GPT-4o vs Claude Sonnet | Spec recommends either. Set via `LLM_MODEL` Asset |
-| `[!]` | Azure subscription | Need one for Azure AI Search | Alternative: Pinecone or Weaviate |
+| `[x]` | LLM model | UiPath managed gpt-4o | `UiPathAzureChatOpenAI()` — no BYO keys needed |
+| `[x]` | Azure subscription | Not needed | Using UiPath Context Grounding instead of Azure AI Search |
 | `[!]` | UiPath tenant details | `clientId`, `organization`, `tenant` | Goes in `uipath.json` — don't commit real values |
 | `[!]` | Execution mode for Plan A | Inline session vs batched subagents | Context at 60% — start fresh session recommended |
 

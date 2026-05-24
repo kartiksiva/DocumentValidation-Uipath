@@ -1,0 +1,127 @@
+<h2>Maestro Workflow — ContractComparisonProcess</h2>
+<p class="subtitle">End-to-end flow from document upload to confirmed review. Scroll down to see full pipeline.</p>
+
+<style>
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 1.5rem 0; }
+  .flow-step { display: flex; gap: 0; }
+  .flow-line { display: flex; flex-direction: column; align-items: center; min-width: 36px; }
+  .flow-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; margin-top: 18px; }
+  .flow-connector { width: 2px; flex: 1; min-height: 20px; background: var(--border); }
+  .flow-card { flex: 1; margin: 8px 0 8px 12px; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }
+  .flow-card h3 { margin: 0 0 0.3rem; font-size: 0.9rem; }
+  .flow-card p { margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; }
+  .badge { font-size: 0.7rem; padding: 1px 7px; border-radius: 4px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+  .branch { margin-left: 48px; display: flex; gap: 0.75rem; margin-bottom: 8px; }
+  .branch-card { flex: 1; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.8rem; border: 1px dashed var(--border); }
+</style>
+
+<div class="flow">
+
+  <!-- Step 1 -->
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot" style="background:#2563eb;"></div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-card" style="border-color:#2563eb44;">
+      <h3>1. Upload &amp; Trigger <span class="badge" style="background:#2563eb22;color:#60a5fa;">Coded App → SDK</span></h3>
+      <p>User selects mode (Buyer/Seller diff or Template compliance) + uploads 2 docs (PDF/DOCX).
+      Optional: toggle "Include version history". SDK uploads files to <strong>UiPath Buckets</strong>, then calls <code>MaestroProcesses.start()</code> with params.</p>
+    </div>
+  </div>
+
+  <!-- Branch: mode router -->
+  <div class="branch">
+    <div class="branch-card" style="border-color:#7c3aed66;">
+      <strong style="color:#a78bfa;">Mode A</strong> — Buyer vs Seller diff<br>
+      <span style="color:var(--text-secondary);">Compare two contract versions clause-by-clause</span>
+    </div>
+    <div class="branch-card" style="border-color:#d9770666;">
+      <strong style="color:#fbbf24;">Mode B</strong> — Template compliance<br>
+      <span style="color:var(--text-secondary);">Contract vs standard template, flag deviations</span>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot" style="background:#7c3aed;"></div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-card" style="border-color:#7c3aed44;">
+      <h3>2. Agent 1 — Extractor <span class="badge" style="background:#7c3aed22;color:#a78bfa;">Document Understanding</span></h3>
+      <p>Pulls both documents from Buckets. Uses DU to extract structured text — clause headings, sub-clauses, definitions, signature blocks. Handles PDF (native + scanned/OCR) and DOCX. Outputs structured JSON per document.</p>
+    </div>
+  </div>
+
+  <!-- Optional: version history -->
+  <div class="branch">
+    <div class="branch-card" style="border-color:#64748b66; background:var(--surface);">
+      <strong style="color:#94a3b8;">Optional: Version History</strong><br>
+      <span style="color:var(--text-secondary);">If toggled: fetch prior versions from Buckets by contract ID. Extractor runs on each prior version too.</span>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot" style="background:#059669;"></div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-card" style="border-color:#05966944;">
+      <h3>3. Agent 2 — Comparator <span class="badge" style="background:#05966922;color:#4ade80;">LLM</span></h3>
+      <p>Takes structured JSON from Extractor. Runs clause-by-clause comparison. Identifies: added/removed/modified clauses, risk deltas (liability cap changes, IP ownership shifts, termination triggers), missing standard clauses. Outputs raw findings JSON.</p>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot" style="background:#0891b2;"></div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-card" style="border-color:#0891b244;">
+      <h3>4. Agent 3 — Reviewer <span class="badge" style="background:#0891b222;color:#22d3ee;">LLM</span></h3>
+      <p>Formats Comparator output into 3 structured outputs:<br>
+      • <strong>Risk Scorecard</strong> — RAG per category (Payment, Liability, IP, Termination, Confidentiality)<br>
+      • <strong>Side-by-side diff</strong> — clause pairs with change type tags<br>
+      • <strong>Narrative summary</strong> — plain-English, business-user level, key risks + recommendations</p>
+    </div>
+  </div>
+
+  <!-- Step 5: Human Task -->
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot" style="background:#d97706;"></div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-card" style="border-color:#d9770644; background:#d9770608;">
+      <h3>5. Human Task Created <span class="badge" style="background:#d9770622;color:#fbbf24;">Maestro → Tasks SDK</span></h3>
+      <p>Maestro creates Human Task with full review payload. Task surfaces in Coded App via <code>Tasks</code> SDK — same UI the user uploaded from. Business user sees full scorecard + diff + summary.</p>
+    </div>
+  </div>
+
+  <!-- Step 6: Decision -->
+  <div class="branch">
+    <div class="branch-card" style="border-color:#16a34a66; background:#16a34a08;">
+      <strong style="color:#4ade80;">✓ Confirm</strong><br>
+      <span style="color:var(--text-secondary);">Results finalized. Stored in Buckets with audit log. Case closed in Maestro.</span>
+    </div>
+    <div class="branch-card" style="border-color:#dc262666; background:#dc262608;">
+      <strong style="color:#f87171;">✗ Reject</strong><br>
+      <span style="color:var(--text-secondary);">User adds rejection note. Case flagged for manual review / escalation. Maestro marks incomplete.</span>
+    </div>
+  </div>
+
+  <!-- Step 6 -->
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot" style="background:#64748b;"></div>
+    </div>
+    <div class="flow-card" style="border-color:#64748b44;">
+      <h3>6. Storage &amp; Audit <span class="badge" style="background:#64748b22;color:#94a3b8;">Buckets</span></h3>
+      <p>All inputs + outputs stored: source docs, extracted JSON, comparison findings, final review, user decision + timestamp. Enables version history lookup in future runs.</p>
+    </div>
+  </div>
+
+</div>

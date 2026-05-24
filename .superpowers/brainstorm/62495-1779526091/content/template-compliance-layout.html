@@ -1,0 +1,210 @@
+<h2>Template Compliance View</h2>
+<p class="subtitle">Same workspace, different mode. Contract on left, Standard Template on right (reference). Three deviation types.</p>
+
+<style>
+  .workspace { display: grid; grid-template-columns: 240px 1fr; grid-template-rows: auto 1fr auto; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; min-height: 500px; font-size: 0.78rem; }
+  .ws-topbar { grid-column: 1 / -1; background: #0f172a; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); }
+  .ws-topbar .doc-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+  .mode-badge-gold { font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: #d9770622; color: #fbbf24; font-weight: 600; }
+  .ws-sidebar { background: #0f172a; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .ws-sidebar-section { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .ws-sidebar-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #475569; margin-bottom: 0.4rem; }
+  .rag-row { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; font-size: 0.74rem; color: #94a3b8; }
+  .rag-pill { font-size: 0.62rem; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+  .finding-item { padding: 0.35rem 0.5rem; border-radius: 5px; margin: 2px 0; cursor: pointer; transition: background 0.15s; display: flex; gap: 0.4rem; align-items: flex-start; }
+  .finding-item:hover { background: #1e293b; }
+  .finding-item.active { background: #1e3a5f; }
+  .finding-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .finding-text { color: #94a3b8; font-size: 0.72rem; line-height: 1.4; }
+  .ws-docarea { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+  .doc-panel { display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+  .doc-panel:last-child { border-right: none; }
+  .doc-panel-header { padding: 0.4rem 0.75rem; background: #0f172a; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; }
+  .doc-body { padding: 0.75rem; overflow-y: auto; flex: 1; font-family: Georgia, serif; color: #cbd5e1; line-height: 1.85; font-size: 0.77rem; background: #1e293b; }
+  .clause-block { margin-bottom: 0.85rem; }
+  .clause-title { font-weight: 700; color: #e2e8f0; margin-bottom: 0.2rem; font-size: 0.78rem; }
+  .hl-red { background: #ef444428; border-bottom: 2px solid #ef4444; padding: 0 2px; border-radius: 2px; }
+  .hl-amber { background: #f59e0b28; border-bottom: 2px solid #f59e0b; padding: 0 2px; border-radius: 2px; }
+  .hl-green { background: #22c55e28; border-bottom: 2px solid #22c55e; padding: 0 2px; border-radius: 2px; }
+  .hl-blue { background: #3b82f628; border-bottom: 2px solid #3b82f6; padding: 0 2px; border-radius: 2px; }
+  .clause-finding { background: #0f172a; border-left: 2px solid #3b82f6; border-radius: 0 4px 4px 0; padding: 0.35rem 0.6rem; margin-top: 0.3rem; font-family: system-ui; font-size: 0.7rem; color: #60a5fa; line-height: 1.5; }
+  .missing-clause { background: #ef444410; border: 1px dashed #ef444466; border-radius: 5px; padding: 0.5rem 0.75rem; margin-bottom: 0.85rem; }
+  .missing-label { font-size: 0.68rem; color: #ef4444; font-weight: 700; margin-bottom: 0.2rem; font-family: system-ui; }
+  .template-ref { background: #0f172a; border-radius: 6px; padding: 0.75rem; }
+  .confirm-bar { grid-column: 1 / -1; background: #0f172a; border-top: 1px solid var(--border); padding: 0.6rem 1rem; display: flex; gap: 0.75rem; align-items: center; justify-content: flex-end; }
+  .btn { padding: 0.35rem 1rem; border-radius: 5px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; }
+  .btn-confirm { background: #16a34a; color: white; }
+  .btn-reject { background: #1e293b; color: #f87171; border: 1px solid #dc2626; }
+  .deviation-legend { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .dev-chip { font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
+  .compliance-score { text-align: center; padding: 0.5rem; }
+  .score-ring { font-size: 1.4rem; font-weight: 800; color: #f59e0b; display: block; }
+  .score-label { font-size: 0.65rem; color: #64748b; }
+</style>
+
+<div class="mockup">
+  <div class="mockup-header">Template Compliance Workspace — Contract vs Standard MSA Template</div>
+  <div class="mockup-body" style="padding:0;">
+
+    <div class="workspace">
+
+      <!-- Top bar -->
+      <div class="ws-topbar">
+        <span class="doc-title">Vendor_Contract_Draft.pdf</span>
+        <span style="color:#475569;">vs</span>
+        <span class="doc-title" style="color:#fbbf24;">Standard_MSA_Template.docx</span>
+        <span class="mode-badge-gold">Template Compliance</span>
+        <span style="flex:1;"></span>
+        <span style="font-size:0.68rem; color:#475569;">1 Missing · 2 Modified · 1 Extra · 3 Compliant</span>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="ws-sidebar">
+
+        <!-- Compliance score -->
+        <div class="ws-sidebar-section">
+          <div class="ws-sidebar-label">Compliance Score</div>
+          <div class="compliance-score">
+            <span class="score-ring">67%</span>
+            <span class="score-label">4 of 7 clauses compliant</span>
+          </div>
+        </div>
+
+        <!-- Category scores -->
+        <div class="ws-sidebar-section">
+          <div class="ws-sidebar-label">By Category</div>
+          <div class="rag-row">Liability <span class="rag-pill" style="background:#ef444422;color:#ef4444;">MISSING</span></div>
+          <div class="rag-row">IP Ownership <span class="rag-pill" style="background:#f59e0b22;color:#f59e0b;">MODIFIED</span></div>
+          <div class="rag-row">Payment <span class="rag-pill" style="background:#f59e0b22;color:#f59e0b;">MODIFIED</span></div>
+          <div class="rag-row">Termination <span class="rag-pill" style="background:#22c55e22;color:#22c55e;">OK</span></div>
+          <div class="rag-row">Confidentiality <span class="rag-pill" style="background:#22c55e22;color:#22c55e;">OK</span></div>
+          <div class="rag-row">Governing Law <span class="rag-pill" style="background:#22c55e22;color:#22c55e;">OK</span></div>
+          <div class="rag-row">Dispute Res. <span class="rag-pill" style="background:#3b82f622;color:#3b82f6;">EXTRA</span></div>
+        </div>
+
+        <!-- Deviations list -->
+        <div class="ws-sidebar-section" style="flex:1; overflow-y:auto;">
+          <div class="ws-sidebar-label">Deviations</div>
+          <div class="finding-item active">
+            <div class="finding-dot" style="background:#ef4444;"></div>
+            <div class="finding-text">§5 Liability cap — clause missing entirely</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#f59e0b;"></div>
+            <div class="finding-text">§7 IP: "work-for-hire" removed, ownership shifted</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#f59e0b;"></div>
+            <div class="finding-text">§12 Payment: Net-45 vs template Net-30</div>
+          </div>
+          <div class="finding-item">
+            <div class="finding-dot" style="background:#3b82f6;"></div>
+            <div class="finding-text">§15 Dispute resolution — not in template</div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="ws-sidebar-section">
+          <div class="ws-sidebar-label">Summary</div>
+          <div style="color:#64748b; font-size:0.71rem; line-height:1.6;">Critical: Liability clause absent — must be added before signing. IP ownership language modified — legal review required.</div>
+        </div>
+
+      </div>
+
+      <!-- Document area -->
+      <div class="ws-docarea">
+
+        <!-- Contract being reviewed -->
+        <div class="doc-panel">
+          <div class="doc-panel-header" style="color:#60a5fa;">
+            <span>📄</span> Contract (Under Review)
+          </div>
+          <div class="doc-body">
+
+            <!-- Missing clause — shown as gap -->
+            <div class="missing-clause">
+              <div class="missing-label">⚠ MISSING CLAUSE — §5 Limitation of Liability</div>
+              <div style="font-size:0.72rem; color:#ef444488; font-family:system-ui;">This clause exists in the Standard Template but is absent from this contract. Must be added.</div>
+              <div class="clause-finding" style="border-color:#ef4444; color:#f87171; margin-top:0.4rem;">See template →</div>
+            </div>
+
+            <!-- Modified clause -->
+            <div class="clause-block" style="border-left:2px solid #f59e0b; padding-left:0.5rem;">
+              <div class="clause-title">7. Intellectual Property</div>
+              <div>All work product created under this Agreement shall be <span class="hl-amber">owned by Vendor</span> unless otherwise agreed in writing.</div>
+              <div class="clause-finding" style="border-color:#f59e0b; color:#fbbf24;">Template requires "work-for-hire" with IP assigned to Client. Vendor ownership is a material deviation.</div>
+            </div>
+
+            <!-- Compliant clause -->
+            <div class="clause-block" style="opacity:0.6;">
+              <div class="clause-title">9. Termination</div>
+              <div>Either party may terminate with <span class="hl-green">30 days written notice.</span></div>
+            </div>
+
+            <!-- Extra clause -->
+            <div class="clause-block" style="border-left:2px solid #3b82f6; padding-left:0.5rem;">
+              <div class="clause-title">15. Dispute Resolution</div>
+              <div><span class="hl-blue">Disputes shall be resolved via binding arbitration in New York.</span></div>
+              <div class="clause-finding">Not in Standard Template. Review whether this is acceptable or should be removed.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Template reference -->
+        <div class="doc-panel">
+          <div class="doc-panel-header" style="color:#fbbf24;">
+            <span>📋</span> Standard Template (Reference)
+          </div>
+          <div class="doc-body" style="background:#16141e;">
+
+            <!-- Template liability clause -->
+            <div class="clause-block" style="border-left:2px solid #ef4444; padding-left:0.5rem;">
+              <div class="clause-title" style="color:#ef4444;">5. Limitation of Liability ← Required</div>
+              <div>In no event shall either party's total liability exceed <span class="hl-red">two (2) times the annual fees</span> paid in the preceding twelve months. This clause is mandatory in all vendor agreements.</div>
+              <div class="clause-finding" style="border-color:#ef4444; color:#f87171;">Required clause. Contract does not contain this. Flag as critical gap.</div>
+            </div>
+
+            <!-- Template IP clause -->
+            <div class="clause-block" style="border-left:2px solid #f59e0b; padding-left:0.5rem;">
+              <div class="clause-title">7. Intellectual Property</div>
+              <div>All work product shall be considered <span class="hl-amber">work-for-hire</span>, with all IP rights assigned to and owned by Client upon payment.</div>
+              <div class="clause-finding" style="border-color:#f59e0b; color:#fbbf24;">Contract version removes "work-for-hire" — significant deviation favouring Vendor.</div>
+            </div>
+
+            <!-- Template termination -->
+            <div class="clause-block" style="opacity:0.6;">
+              <div class="clause-title">9. Termination</div>
+              <div>Either party may terminate with <span class="hl-green">30 days written notice.</span></div>
+            </div>
+
+            <!-- Template: no dispute clause -->
+            <div class="missing-clause" style="border-color:#3b82f666; background:#3b82f608;">
+              <div class="missing-label" style="color:#60a5fa;">ℹ EXTRA IN CONTRACT — §15 Dispute Resolution</div>
+              <div style="font-size:0.72rem; color:#3b82f688; font-family:system-ui;">Standard template has no dispute resolution clause. Contract adds arbitration — assess if acceptable.</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Confirm bar -->
+      <div class="confirm-bar">
+        <div style="font-size:0.68rem; color:#64748b; flex:1;">1 critical gap · Reviewed §5, §7 deviations · Human task assigned to you</div>
+        <button class="btn btn-reject">Reject &amp; Escalate</button>
+        <button class="btn btn-confirm">Confirm Review ✓</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:1rem; padding:0.75rem 1rem; background:var(--surface); border-radius:8px; font-size:0.83rem; line-height:1.7; color:var(--text-secondary);">
+  <strong>4 deviation types vs Buyer/Seller mode:</strong><br>
+  <span style="color:#ef4444;">● Missing</span> — clause in template, absent in contract → shown as gap placeholder in contract column<br>
+  <span style="color:#f59e0b;">● Modified</span> — clause exists but language deviates → highlighted amber in both columns<br>
+  <span style="color:#3b82f6;">● Extra</span> — clause in contract not in template → highlighted blue, flagged for review<br>
+  <span style="color:#22c55e;">● Compliant</span> — clause matches template → highlighted green, dimmed
+</div>

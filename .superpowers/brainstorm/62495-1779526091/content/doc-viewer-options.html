@@ -1,0 +1,109 @@
+<h2>Document Viewer Layout Options</h2>
+<p class="subtitle">How to render documents + findings together. Click to select preferred layout.</p>
+
+<style>
+  .mock-doc { background: #1e293b; border-radius: 6px; padding: 0.75rem; font-size: 0.75rem; line-height: 1.8; font-family: Georgia, serif; color: #cbd5e1; }
+  .highlight-red { background: #ef444433; border-bottom: 2px solid #ef4444; cursor: pointer; border-radius: 2px; padding: 0 2px; }
+  .highlight-amber { background: #f59e0b33; border-bottom: 2px solid #f59e0b; cursor: pointer; border-radius: 2px; padding: 0 2px; }
+  .highlight-green { background: #22c55e33; border-bottom: 2px solid #22c55e; cursor: pointer; border-radius: 2px; padding: 0 2px; }
+  .mock-comment { background: #0f172a; border-left: 3px solid #3b82f6; border-radius: 0 6px 6px 0; padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #94a3b8; margin: 0.25rem 0; font-family: system-ui; }
+  .mock-comment strong { color: #60a5fa; display: block; font-size: 0.7rem; margin-bottom: 2px; }
+  .mock-header { background: #0f172a; border-radius: 6px 6px 0 0; padding: 0.4rem 0.75rem; font-size: 0.72rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .rag-pill { display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 10px; font-weight: 700; margin-left: 4px; vertical-align: middle; }
+</style>
+
+<div class="options">
+
+  <!-- Option A: Side by side with inline highlights -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Side-by-Side Document View <span style="font-size:0.72rem; background:#2563eb22; color:#60a5fa; padding:1px 7px; border-radius:4px; margin-left:6px;">Recommended</span></h3>
+      <p style="font-size:0.82rem; color:var(--text-secondary); margin:0.25rem 0 0.75rem;">Both documents rendered inline, matched clauses highlighted, finding panel below each clause on click.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+        <div>
+          <div class="mock-header">Buyer Contract</div>
+          <div class="mock-doc">
+            <div><strong>5. Liability</strong></div>
+            <div><span class="highlight-red">Liability cap limited to 1× annual fees.</span></div>
+            <div class="mock-comment"><strong>⚠ HIGH RISK</strong>Seller cap is 3×. Gap: 2× annual fees.</div>
+            <div style="margin-top:0.5rem;"><span class="highlight-green">Termination for convenience: 30 days notice.</span></div>
+            <div class="mock-comment"><strong>✓ MATCH</strong>Both parties agree on 30 days.</div>
+            <div style="margin-top:0.5rem;"><span class="highlight-amber">IP ownership reverts on termination.</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="mock-header">Seller Contract</div>
+          <div class="mock-doc">
+            <div><strong>5. Liability</strong></div>
+            <div><span class="highlight-red">Liability cap limited to 3× annual fees.</span></div>
+            <div class="mock-comment"><strong>⚠ HIGH RISK</strong>Buyer cap is 1×. Misalignment flagged.</div>
+            <div style="margin-top:0.5rem;"><span class="highlight-green">Termination for convenience: 30 days notice.</span></div>
+            <div class="mock-comment"><strong>✓ MATCH</strong>Both parties agree on 30 days.</div>
+            <div style="margin-top:0.5rem;"><span class="highlight-amber">IP ownership retained by Seller post-term.</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.5rem; margin-top:0.5rem; font-size:0.72rem;">
+        <span style="background:#ef444422; color:#ef4444; padding:2px 8px; border-radius:4px;">● High risk</span>
+        <span style="background:#f59e0b22; color:#f59e0b; padding:2px 8px; border-radius:4px;">● Review needed</span>
+        <span style="background:#22c55e22; color:#22c55e; padding:2px 8px; border-radius:4px;">● Aligned</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Single doc + findings sidebar -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Single Doc + Findings Sidebar</h3>
+      <p style="font-size:0.82rem; color:var(--text-secondary); margin:0.25rem 0 0.75rem;">One document at a time (toggle between Buyer/Seller). Findings panel fixed on right. Click finding → jumps to clause.</p>
+      <div style="display:grid; grid-template-columns:3fr 2fr; gap:0.5rem;">
+        <div>
+          <div class="mock-header">Buyer Contract ▾</div>
+          <div class="mock-doc">
+            <div><strong>5. Liability</strong></div>
+            <div><span class="highlight-red">Liability cap limited to 1× annual fees.</span></div>
+            <div style="margin-top:0.5rem;"><span class="highlight-green">Termination: 30 days notice.</span></div>
+            <div style="margin-top:0.5rem;"><span class="highlight-amber">IP ownership reverts on termination.</span></div>
+            <div style="margin-top:0.5rem;">Governing law: Delaware, USA...</div>
+          </div>
+        </div>
+        <div>
+          <div class="mock-header">Findings</div>
+          <div style="background:#1e293b; border-radius:6px; padding:0.5rem; font-size:0.73rem; color:#94a3b8; line-height:1.8;">
+            <div style="color:#ef4444; cursor:pointer;">▶ §5 Liability cap gap</div>
+            <div style="color:#f59e0b; cursor:pointer;">▶ §7 IP post-termination</div>
+            <div style="color:#22c55e; cursor:pointer;">▶ §9 Termination aligned</div>
+            <div style="color:#f59e0b; cursor:pointer;">▶ §12 Payment terms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Report + expandable source -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Report-First + Expandable Source View</h3>
+      <p style="font-size:0.82rem; color:var(--text-secondary); margin:0.25rem 0 0.75rem;">Primary view is scorecard + narrative. Each finding has "View in document" → expands to show the exact clause in context.</p>
+      <div style="background:#1e293b; border-radius:6px; padding:0.75rem; font-size:0.75rem; color:#cbd5e1;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+          <strong>Liability</strong>
+          <span class="rag-pill" style="background:#ef444433;color:#ef4444;">HIGH RISK</span>
+        </div>
+        <div style="color:#94a3b8; font-size:0.72rem;">Buyer caps at 1×, Seller at 3×. Recommend aligning to 2×.</div>
+        <div style="margin-top:0.5rem; color:#3b82f6; font-size:0.72rem; cursor:pointer;">▶ View in document ↓</div>
+        <div style="margin-top:0.4rem; background:#0f172a; border-radius:4px; padding:0.5rem; font-family:Georgia,serif; font-size:0.72rem; border-left:2px solid #ef4444;">
+          "...liability of either party shall not exceed <span class="highlight-red">one (1) times</span> the annual fees paid..."
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:1rem; padding:0.75rem 1rem; background:var(--surface); border-radius:8px; font-size:0.83rem; color:var(--text-secondary);">
+  <strong>Rendering approach:</strong> PDF → <code>react-pdf</code> (PDF.js wrapper) with annotation overlay. DOCX → <code>mammoth.js</code> → HTML → render inline. AI highlights stored as character offsets, mapped to rendered positions.
+</div>

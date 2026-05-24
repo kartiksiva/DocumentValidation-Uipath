@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guidelines & Updated Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 1.5rem; font-size: 0.82rem; color: #1e293b; }
+
+  h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .sub { font-size: 0.78rem; color: #64748b; margin-bottom: 1.25rem; }
+
+  /* Section headers */
+  .section-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 0.75rem; margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+  .section-title::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+
+  /* Guideline library */
+  .guideline-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 0.6rem; }
+  .gc-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; }
+  .gc-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+  .gc-meta { flex: 1; }
+  .gc-name { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+  .gc-desc { font-size: 0.68rem; color: #64748b; margin-top: 1px; }
+  .gc-stats { font-size: 0.68rem; color: #94a3b8; }
+  .status-pill { font-size: 0.62rem; padding: 2px 7px; border-radius: 8px; font-weight: 700; }
+  .indexed { background: #dcfce7; color: #16a34a; }
+  .processing { background: #fef3c7; color: #d97706; }
+  .gc-body { padding: 0.5rem 1rem 0.75rem; border-top: 1px solid #f1f5f9; background: #fafafa; font-size: 0.71rem; color: #64748b; line-height: 1.7; }
+  .chunk-count { display: inline-block; background: #dbeafe; color: #1d4ed8; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px; }
+
+  /* Architecture diagram */
+  .arch { display: flex; flex-direction: column; gap: 0; }
+  .arch-layer { border-radius: 10px; border: 1.5px solid #e2e8f0; background: white; margin-bottom: 0.5rem; overflow: hidden; }
+  .al-header { padding: 0.55rem 1rem; font-size: 0.73rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #f1f5f9; }
+  .al-body { padding: 0.6rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .al-chip { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.3rem 0.65rem; font-size: 0.72rem; color: #475569; }
+  .al-chip strong { display: block; font-size: 0.73rem; color: #1e293b; }
+  .al-chip span { font-size: 0.67rem; color: #94a3b8; }
+  .arrow-row { text-align: center; color: #cbd5e1; font-size: 0.75rem; margin: -0.1rem 0; padding: 0; line-height: 1.2; }
+
+  /* NEW badge */
+  .new-badge { font-size: 0.58rem; padding: 1px 5px; border-radius: 3px; background: #dcfce7; color: #16a34a; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 4px; vertical-align: middle; }
+
+  /* Context grounding callout */
+  .grounding-box { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .grounding-title { font-size: 0.8rem; font-weight: 700; color: #b45309; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+  .grounding-flow { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.72rem; color: #92400e; }
+  .grounding-step { background: white; border: 1px solid #fde68a; border-radius: 6px; padding: 0.3rem 0.65rem; font-size: 0.71rem; color: #92400e; }
+  .grounding-arrow { color: #d97706; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h2>Guidelines & Context Grounding</h2>
+<p class="sub">How guideline documents (GAFTA, Incoterms, etc.) ground the AI analysis — and where they fit in the architecture.</p>
+
+<!-- Grounding flow -->
+<div class="grounding-box">
+  <div class="grounding-title">🔍 How Context Grounding Works</div>
+  <div class="grounding-flow">
+    <div class="grounding-step">Guideline uploaded (PDF/DOCX)</div>
+    <div class="grounding-arrow">→</div>
+    <div class="grounding-step">DU extracts + chunks text</div>
+    <div class="grounding-arrow">→</div>
+    <div class="grounding-step">Chunks indexed in vector store</div>
+    <div class="grounding-arrow">→</div>
+    <div class="grounding-step">Template links to guideline set</div>
+    <div class="grounding-arrow">→</div>
+    <div class="grounding-step">Comparator Agent retrieves relevant chunks per clause</div>
+    <div class="grounding-arrow">→</div>
+    <div class="grounding-step">LLM grounds analysis against industry definitions</div>
+  </div>
+</div>
+
+<!-- Guideline library -->
+<div class="section-title">Guideline Document Library</div>
+
+<div class="guideline-card">
+  <div class="gc-row">
+    <div class="gc-icon" style="background:#fffbeb;">🌾</div>
+    <div class="gc-meta">
+      <div class="gc-name">GAFTA 100 — Standard Contract for Grain in Bulk</div>
+      <div class="gc-desc">Grain and Feed Trade Association · CIF/FOB terms, quality, arbitration</div>
+    </div>
+    <div class="gc-stats">847 chunks <span class="chunk-count">indexed</span></div>
+    <span class="status-pill indexed">● Indexed</span>
+  </div>
+  <div class="gc-body">
+    Used by templates: <strong>GAFTA 100 Trade Contract</strong><br>
+    Key concepts indexed: delivery terms, quality tolerances, sampling rules, force majeure clause 22, payment by irrevocable LC, GAFTA arbitration London. AI queries these definitions when reviewing deviating clauses.
+  </div>
+</div>
+
+<div class="guideline-card">
+  <div class="gc-row">
+    <div class="gc-icon" style="background:#fffbeb;">⚖️</div>
+    <div class="gc-meta">
+      <div class="gc-name">GAFTA 125 — Arbitration Rules</div>
+      <div class="gc-desc">Procedural rules for GAFTA dispute resolution</div>
+    </div>
+    <div class="gc-stats">312 chunks <span class="chunk-count">indexed</span></div>
+    <span class="status-pill indexed">● Indexed</span>
+  </div>
+  <div class="gc-body">
+    Used by templates: <strong>GAFTA 100 Trade Contract</strong><br>
+    AI references this when reviewing arbitration clauses — flags if venue, governing rules, or appeal rights deviate from GAFTA 125 standard.
+  </div>
+</div>
+
+<div class="guideline-card">
+  <div class="gc-row">
+    <div class="gc-icon" style="background:#eff6ff;">🚢</div>
+    <div class="gc-meta">
+      <div class="gc-name">Incoterms 2020 — ICC Rules</div>
+      <div class="gc-desc">International Commercial Terms · risk and cost transfer definitions</div>
+    </div>
+    <div class="gc-stats">524 chunks <span class="chunk-count">indexed</span></div>
+    <span class="status-pill indexed">● Indexed</span>
+  </div>
+  <div class="gc-body">
+    Used by templates: <strong>GAFTA 100</strong>, <strong>Standard MSA</strong><br>
+    AI uses Incoterm definitions (FOB, CIF, DAP, etc.) to evaluate delivery clause risk. Flags ambiguous or non-standard Incoterm usage.
+  </div>
+</div>
+
+<div class="guideline-card">
+  <div class="gc-row">
+    <div class="gc-icon" style="background:#fdf4ff;">📜</div>
+    <div class="gc-meta">
+      <div class="gc-name">Company Legal Policy v3.2</div>
+      <div class="gc-desc">Internal approved deviations, signing authority, required clauses</div>
+    </div>
+    <div class="gc-stats">processing…</div>
+    <span class="status-pill processing">● Indexing</span>
+  </div>
+</div>
+
+<!-- Upload zone -->
+<div style="border:1.5px dashed #cbd5e1; border-radius:10px; padding:1.25rem; text-align:center; background:white; cursor:pointer; margin-bottom:1.5rem;">
+  <div style="font-size:1.25rem; margin-bottom:0.3rem;">📚</div>
+  <div style="font-size:0.8rem; font-weight:600; color:#475569;">Upload Guideline Document</div>
+  <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">PDF or DOCX · Auto-extracted, chunked, and indexed for RAG · Then link to templates</div>
+</div>
+
+<!-- Updated architecture -->
+<div class="section-title">Updated Architecture — Context Grounding Added</div>
+
+<div class="arch">
+
+  <div class="arch-layer">
+    <div class="al-header" style="background:#eff6ff; color:#1d4ed8;">🖥️ UI Layer (Coded App)</div>
+    <div class="al-body">
+      <div class="al-chip"><strong>Review Workspace</strong><span>Doc viewer + findings</span></div>
+      <div class="al-chip"><strong>Template Manager</strong><span>Upload · system msg · guidelines</span></div>
+      <div class="al-chip"><strong>Guideline Library</strong><span>Upload · index · link to templates</span></div>
+      <div class="al-chip"><strong>Document Onboarding</strong><span>Upload contract · tag template</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-row">↕ UiPath TypeScript SDK (browser)</div>
+
+  <div class="arch-layer">
+    <div class="al-header" style="background:#fdf4ff; color:#7c3aed;">⚡ UiPath Services (SDK)</div>
+    <div class="al-body">
+      <div class="al-chip"><strong>Buckets</strong><span>Contracts + templates + guidelines</span></div>
+      <div class="al-chip"><strong>Entities</strong><span>Template registry + system messages</span></div>
+      <div class="al-chip"><strong>MaestroProcesses</strong><span>Start comparison jobs</span></div>
+      <div class="al-chip"><strong>Tasks</strong><span>Human task confirm/reject</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-row">↕ Maestro SDK</div>
+
+  <div class="arch-layer">
+    <div class="al-header" style="background:#fff7ed; color:#c2410c;">🎯 Maestro — ContractComparisonProcess</div>
+    <div class="al-body">
+      <div class="al-chip"><strong>Mode Router</strong><span>Diff vs Compliance</span></div>
+      <div class="al-chip"><strong>Template Loader</strong><span>Fetch template + system message</span></div>
+      <div class="al-chip"><strong>Guideline Loader <span class="new-badge">NEW</span></strong><span>Fetch linked guideline set</span></div>
+      <div class="al-chip"><strong>Human Task</strong><span>Confirm/reject gate</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-row">↕ Agent calls</div>
+
+  <div class="arch-layer">
+    <div class="al-header" style="background:#f0fdf4; color:#15803d;">🤖 Agent Pipeline</div>
+    <div class="al-body">
+      <div class="al-chip"><strong>Agent 1: Extractor</strong><span>DU → structured clause JSON</span></div>
+      <div class="al-chip"><strong>Agent 2: Comparator <span class="new-badge">NEW</span></strong><span>RAG: retrieves guideline chunks per clause before LLM compare</span></div>
+      <div class="al-chip"><strong>Agent 3: Reviewer</strong><span>Scorecard + diff + narrative (system msg per template)</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-row">↕</div>
+
+  <div class="arch-layer">
+    <div class="al-header" style="background:#f8fafc; color:#475569;">🗄️ Storage + Knowledge</div>
+    <div class="al-body">
+      <div class="al-chip"><strong>Buckets</strong><span>Contracts, templates, guidelines, results</span></div>
+      <div class="al-chip"><strong>Entities</strong><span>Template registry with system messages</span></div>
+      <div class="al-chip"><strong>Vector Store <span class="new-badge">NEW</span></strong><span>Indexed guideline chunks for RAG retrieval</span></div>
+      <div class="al-chip"><strong>Assets</strong><span>LLM config, thresholds</span></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
