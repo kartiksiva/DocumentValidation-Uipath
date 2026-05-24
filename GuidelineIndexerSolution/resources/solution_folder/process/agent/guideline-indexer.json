@@ -1,0 +1,38 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "guideline-indexer",
+    "kind": "process",
+    "type": "agent",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "37dce6a9-2ae5-447e-9305-48d9da952a46",
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "guideline-indexer"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Agent",
+      "name": "guideline-indexer",
+      "package": {
+        "key": "765c12aa-fa04-47b0-82d7-0731e69fc01d"
+      },
+      "inputArguments": "{}",
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "9a6ebd9b-8885-45fc-8659-c58851b4c076",
+    "files": []
+  }
+}

@@ -11,3 +11,9 @@ src/**/*.js.map
 vite.config.js
 vite.config.js.map
 supabase/.temp/
+
+# Python agent venvs and build artifacts
+**/.venv/
+**/__pycache__/
+**/__uipath/
+**/eval-results.json

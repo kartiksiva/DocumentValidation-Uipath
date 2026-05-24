@@ -1,0 +1,22 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "extractor",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "2d3fae88-5450-4d1f-ba3a-613a010b6633",
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "extractor"
+    },
+    "locks": [],
+    "key": "d52087fb-4cfe-4b4b-843d-41a268235840",
+    "files": []
+  }
+}

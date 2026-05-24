@@ -1,0 +1,38 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "extractor",
+    "kind": "process",
+    "type": "agent",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "2d3fae88-5450-4d1f-ba3a-613a010b6633",
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "extractor"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Agent",
+      "name": "extractor",
+      "package": {
+        "key": "d52087fb-4cfe-4b4b-843d-41a268235840"
+      },
+      "inputArguments": "{}",
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "5aac7787-422a-40b9-94e7-fbc09ba05701",
+    "files": []
+  }
+}

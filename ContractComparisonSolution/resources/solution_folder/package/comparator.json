@@ -1,0 +1,22 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "comparator",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "ff2e3156-2f62-49c2-a014-b47216e6d08e",
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "comparator"
+    },
+    "locks": [],
+    "key": "6a776984-1c45-450a-9fc2-4ac6d3c1f90a",
+    "files": []
+  }
+}

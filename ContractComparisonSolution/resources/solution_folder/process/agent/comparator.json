@@ -1,0 +1,38 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "comparator",
+    "kind": "process",
+    "type": "agent",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "ff2e3156-2f62-49c2-a014-b47216e6d08e",
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "comparator"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Agent",
+      "name": "comparator",
+      "package": {
+        "key": "6a776984-1c45-450a-9fc2-4ac6d3c1f90a"
+      },
+      "inputArguments": "{}",
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "e8bdcdf7-e581-4bc3-a9b3-628866fac0f0",
+    "files": []
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "reviewer",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "07d70956-0499-4280-aea8-151a8decedba",
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "reviewer"
+    },
+    "locks": [],
+    "key": "2d790cb9-d1ce-4568-8727-8b53d1a34e1d",
+    "files": []
+  }
+}

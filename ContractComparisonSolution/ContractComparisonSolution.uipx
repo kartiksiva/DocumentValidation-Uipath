@@ -1,0 +1,27 @@
+{
+  "DocVersion": "1.0.0",
+  "StudioMinVersion": "2025.10.0",
+  "SolutionId": "8a710bed-f68c-4b73-aad6-7a843295c784",
+  "Projects": [
+    {
+      "Type": "Flow",
+      "ProjectRelativePath": "ContractComparisonProcess/project.uiproj",
+      "Id": "94b9cfc1-fb1f-4335-89d5-43fd40531bc7"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "extractor/project.uiproj",
+      "Id": "2d3fae88-5450-4d1f-ba3a-613a010b6633"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "comparator/project.uiproj",
+      "Id": "ff2e3156-2f62-49c2-a014-b47216e6d08e"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "reviewer/project.uiproj",
+      "Id": "07d70956-0499-4280-aea8-151a8decedba"
+    }
+  ]
+}
