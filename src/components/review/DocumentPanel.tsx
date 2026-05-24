@@ -6,7 +6,7 @@ interface Props {
   filename: string;
   label: string;
   isTemplate?: boolean;
-  panelRef?: React.RefObject<HTMLDivElement>;
+  panelRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function DocumentPanel({ blob, filename, label, isTemplate, panelRef }: Props) {
