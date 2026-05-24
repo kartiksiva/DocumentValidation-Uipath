@@ -1,7 +1,6 @@
 import os
 import shutil
 import tempfile
-import uuid
 from typing import Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -92,12 +91,12 @@ async def download_docs(state: ExtractorState) -> dict:
     tmpdir = tempfile.mkdtemp(prefix="extractor_")
 
     async def _dl(key: str, subdir: str) -> str:
-        dest = os.path.join(tmpdir, subdir)
-        os.makedirs(dest)
+        dest_file = os.path.join(tmpdir, subdir, os.path.basename(key))
+        os.makedirs(os.path.dirname(dest_file), exist_ok=True)
         await sdk.buckets.download_async(
-            name=state.bucket_name, blob_file_path=key, destination_path=dest
+            name=state.bucket_name, blob_file_path=key, destination_path=dest_file
         )
-        return os.path.join(dest, os.path.basename(key))
+        return dest_file
 
     doc_a_path = await _dl(state.doc_a_key, "a")
     doc_b_path = await _dl(state.doc_b_key, "b")
