@@ -1,11 +1,12 @@
 # Project TODO — Contract Comparison Agent
 
-Last updated: 2026-05-24
+Last updated: 2026-05-24 (Plan A implementation complete — awaiting Claude review)
 
 ## Legend
 - `[ ]` Not started
 - `[~]` In progress
 - `[x]` Done
+- `[*]` To be reviewed
 - `[!]` Blocked / needs decision
 
 ---
@@ -30,17 +31,17 @@ Reference: `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
 |--------|------|-------|
 | `[x]` | **T1** Vite + React scaffold | `npm install`, `vite.config.ts`, `index.html`, `tailwind`, `tsconfig.json` |
 | `[x]` | **T2** Domain types | `src/types/workspace.ts`, `template.ts`, `review.ts` |
-| `[ ]` | **T3** SDK singleton | `src/lib/sdk.ts` + test. Singleton pattern — never `new UiPath()` outside this file |
-| `[ ]` | **T4** Bucket utilities | `src/lib/buckets.ts` + tests for `buildBucketKey()` |
-| `[ ]` | **T5** Entity helpers | `src/lib/entities.ts` — CRUD for Workspace, Template, Guideline |
-| `[ ]` | **T6** Maestro + Tasks | `src/lib/maestro.ts`, `tasks.ts`, `hooks/useTaskPolling.ts` (5s poll) |
-| `[ ]` | **T7** App shell + routing | `AppShell.tsx`, `Sidebar.tsx`, `App.tsx`, stub pages |
-| `[ ]` | **T8** Workspace browser | `WorkspaceBrowser.tsx` + `WorkspaceCard.tsx` — card grid, search, filter |
-| `[ ]` | **T9** Workspace detail | `VersionList`, `RunComparisonForm`, `ComparisonHistory`, `WorkspaceDetail` |
-| `[ ]` | **T10** Document renderer | `PdfViewer` (react-pdf), `DocxViewer` (mammoth), `DocumentPanel` |
-| `[ ]` | **T11** Highlight layer | `HighlightLayer.tsx` — mark.js fuzzy match on `finding.snippetA` |
-| `[ ]` | **T12** Review workspace | `FindingsSidebar`, `ConfirmBar`, `ReviewWorkspace` — full HITL UI |
-| `[ ]` | **T13** Admin screens | `TemplateManager`, `GuidelineLibrary` — system message editor, guideline upload |
+| `[*]` | **T3** SDK singleton | `src/lib/sdk.ts` + test. Singleton pattern — never `new UiPath()` outside this file |
+| `[*]` | **T4** Bucket utilities | `src/lib/buckets.ts` + tests for `buildBucketKey()` |
+| `[*]` | **T5** Entity helpers | `src/lib/entities.ts` — CRUD for Workspace, Template, Guideline |
+| `[*]` | **T6** Maestro + Tasks | `src/lib/maestro.ts`, `tasks.ts`, `hooks/useTaskPolling.ts` (5s poll) |
+| `[*]` | **T7** App shell + routing | `AppShell.tsx`, `Sidebar.tsx`, `App.tsx`, stub pages |
+| `[*]` | **T8** Workspace browser | `WorkspaceBrowser.tsx` + `WorkspaceCard.tsx` — card grid, search, filter |
+| `[*]` | **T9** Workspace detail | `VersionList`, `RunComparisonForm`, `ComparisonHistory`, `WorkspaceDetail` |
+| `[*]` | **T10** Document renderer | `PdfViewer` (react-pdf), `DocxViewer` (mammoth), `DocumentPanel` |
+| `[*]` | **T11** Highlight layer | `HighlightLayer.tsx` — mark.js fuzzy match on `finding.snippetA` |
+| `[*]` | **T12** Review workspace | `FindingsSidebar`, `ConfirmBar`, `ReviewWorkspace` — full HITL UI |
+| `[*]` | **T13** Admin screens | `TemplateManager`, `GuidelineLibrary` — system message editor, guideline upload |
 | `[ ]` | **T14** Build + deploy | `uip codedapp pack/publish/deploy` to UiPath Cloud |
 
 ---
@@ -76,11 +77,6 @@ Reference: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md`
 
 ---
 
-## Context Warning
+## Context / Session Notes
 
-Session at **60% context (120k/200k tokens)**. Recommendation: start new Claude Code session for Plan A execution to avoid autocompact mid-task.
-
-When starting new session, key files to read first:
-1. `CLAUDE.md` — loaded automatically
-2. `docs/superpowers/plans/2026-05-24-coded-app-plan.md` — Plan A tasks
-3. Check this `TODO.md` to pick up where left off
+Plan A T3–T13 implemented across sessions. Two rounds of code review + fixes applied (commits `4bc56e4`, `a826b4d`, `01da12e`). All 26 tests pass · tsc clean. Awaiting Claude's final sign-off before T14 (deploy).
