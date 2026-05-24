@@ -4,30 +4,216 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "9ad8e012-5ac3-48af-a758-7731f65c0a11",
+            "uniqueId": "6826dfaf-03f5-4d52-b507-928d95103613",
             "type": "agent",
             "input": {
                 "type": "object",
                 "properties": {
-                    "topic": {
-                        "title": "Topic",
+                    "bucket_name": {
+                        "title": "Bucket Name",
                         "type": "string"
+                    },
+                    "doc_a_key": {
+                        "title": "Doc A Key",
+                        "type": "string"
+                    },
+                    "doc_b_key": {
+                        "title": "Doc B Key",
+                        "type": "string"
+                    },
+                    "workspace_id": {
+                        "title": "Workspace Id",
+                        "type": "string"
+                    },
+                    "comparison_id": {
+                        "title": "Comparison Id",
+                        "type": "string"
+                    },
+                    "include_version_history": {
+                        "default": false,
+                        "title": "Include Version History",
+                        "type": "boolean"
+                    },
+                    "prior_version_keys": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "title": "Prior Version Keys",
+                        "type": "array"
                     }
                 },
                 "required": [
-                    "topic"
+                    "bucket_name",
+                    "doc_a_key",
+                    "doc_b_key",
+                    "workspace_id",
+                    "comparison_id"
                 ]
             },
             "output": {
                 "type": "object",
                 "properties": {
-                    "report": {
-                        "title": "Report",
-                        "type": "string"
+                    "doc_a": {
+                        "properties": {
+                            "doc_key": {
+                                "title": "Doc Key",
+                                "type": "string"
+                            },
+                            "clauses": {
+                                "items": {
+                                    "properties": {
+                                        "clause_ref": {
+                                            "title": "Clause Ref",
+                                            "type": "string"
+                                        },
+                                        "heading": {
+                                            "title": "Heading",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "title": "Text",
+                                            "type": "string"
+                                        },
+                                        "page_number": {
+                                            "title": "Page Number",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "clause_ref",
+                                        "heading",
+                                        "text",
+                                        "page_number"
+                                    ],
+                                    "title": "ClauseBlock",
+                                    "type": "object"
+                                },
+                                "title": "Clauses",
+                                "type": "array"
+                            },
+                            "extraction_method": {
+                                "title": "Extraction Method",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "doc_key",
+                            "clauses",
+                            "extraction_method"
+                        ],
+                        "title": "DocumentClauses",
+                        "type": "object"
+                    },
+                    "doc_b": {
+                        "properties": {
+                            "doc_key": {
+                                "title": "Doc Key",
+                                "type": "string"
+                            },
+                            "clauses": {
+                                "items": {
+                                    "properties": {
+                                        "clause_ref": {
+                                            "title": "Clause Ref",
+                                            "type": "string"
+                                        },
+                                        "heading": {
+                                            "title": "Heading",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "title": "Text",
+                                            "type": "string"
+                                        },
+                                        "page_number": {
+                                            "title": "Page Number",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "clause_ref",
+                                        "heading",
+                                        "text",
+                                        "page_number"
+                                    ],
+                                    "title": "ClauseBlock",
+                                    "type": "object"
+                                },
+                                "title": "Clauses",
+                                "type": "array"
+                            },
+                            "extraction_method": {
+                                "title": "Extraction Method",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "doc_key",
+                            "clauses",
+                            "extraction_method"
+                        ],
+                        "title": "DocumentClauses",
+                        "type": "object"
+                    },
+                    "history": {
+                        "items": {
+                            "properties": {
+                                "doc_key": {
+                                    "title": "Doc Key",
+                                    "type": "string"
+                                },
+                                "clauses": {
+                                    "items": {
+                                        "properties": {
+                                            "clause_ref": {
+                                                "title": "Clause Ref",
+                                                "type": "string"
+                                            },
+                                            "heading": {
+                                                "title": "Heading",
+                                                "type": "string"
+                                            },
+                                            "text": {
+                                                "title": "Text",
+                                                "type": "string"
+                                            },
+                                            "page_number": {
+                                                "title": "Page Number",
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "required": [
+                                            "clause_ref",
+                                            "heading",
+                                            "text",
+                                            "page_number"
+                                        ],
+                                        "title": "ClauseBlock",
+                                        "type": "object"
+                                    },
+                                    "title": "Clauses",
+                                    "type": "array"
+                                },
+                                "extraction_method": {
+                                    "title": "Extraction Method",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "doc_key",
+                                "clauses",
+                                "extraction_method"
+                            ],
+                            "title": "DocumentClauses",
+                            "type": "object"
+                        },
+                        "title": "History",
+                        "type": "array"
                     }
                 },
                 "required": [
-                    "report"
+                    "doc_a",
+                    "doc_b"
                 ]
             },
             "graph": {
@@ -40,8 +226,8 @@
                         "metadata": {}
                     },
                     {
-                        "id": "generate_report",
-                        "name": "generate_report",
+                        "id": "extract",
+                        "name": "extract",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -57,11 +243,11 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "generate_report",
+                        "target": "extract",
                         "label": null
                     },
                     {
-                        "source": "generate_report",
+                        "source": "extract",
                         "target": "__end__",
                         "label": null
                     }

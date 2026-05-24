@@ -4,30 +4,60 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "8587973b-0853-419c-b5c5-b15393c032a2",
+            "uniqueId": "28214a36-50dc-4467-827d-b8c0cb4637ac",
             "type": "agent",
             "input": {
                 "type": "object",
                 "properties": {
-                    "topic": {
-                        "title": "Topic",
+                    "bucket_name": {
+                        "title": "Bucket Name",
+                        "type": "string"
+                    },
+                    "guideline_key": {
+                        "title": "Guideline Key",
+                        "type": "string"
+                    },
+                    "guideline_id": {
+                        "title": "Guideline Id",
+                        "type": "string"
+                    },
+                    "guideline_name": {
+                        "title": "Guideline Name",
+                        "type": "string"
+                    },
+                    "context_grounding_index": {
+                        "title": "Context Grounding Index",
                         "type": "string"
                     }
                 },
                 "required": [
-                    "topic"
+                    "bucket_name",
+                    "guideline_key",
+                    "guideline_id",
+                    "guideline_name",
+                    "context_grounding_index"
                 ]
             },
             "output": {
                 "type": "object",
                 "properties": {
-                    "report": {
-                        "title": "Report",
+                    "guideline_id": {
+                        "title": "Guideline Id",
+                        "type": "string"
+                    },
+                    "chunk_count": {
+                        "title": "Chunk Count",
+                        "type": "integer"
+                    },
+                    "status": {
+                        "title": "Status",
                         "type": "string"
                     }
                 },
                 "required": [
-                    "report"
+                    "guideline_id",
+                    "chunk_count",
+                    "status"
                 ]
             },
             "graph": {
@@ -40,8 +70,8 @@
                         "metadata": {}
                     },
                     {
-                        "id": "generate_report",
-                        "name": "generate_report",
+                        "id": "index",
+                        "name": "index",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -57,11 +87,11 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "generate_report",
+                        "target": "index",
                         "label": null
                     },
                     {
-                        "source": "generate_report",
+                        "source": "index",
                         "target": "__end__",
                         "label": null
                     }

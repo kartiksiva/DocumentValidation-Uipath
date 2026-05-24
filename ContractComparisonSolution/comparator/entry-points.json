@@ -4,30 +4,212 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "758cf6f4-46f3-4718-8b78-1336cc369b84",
+            "uniqueId": "681ca205-ac15-461c-a8b9-decf1d8fc630",
             "type": "agent",
             "input": {
                 "type": "object",
                 "properties": {
-                    "topic": {
-                        "title": "Topic",
+                    "doc_a": {
+                        "properties": {
+                            "doc_key": {
+                                "title": "Doc Key",
+                                "type": "string"
+                            },
+                            "clauses": {
+                                "items": {
+                                    "properties": {
+                                        "clause_ref": {
+                                            "title": "Clause Ref",
+                                            "type": "string"
+                                        },
+                                        "heading": {
+                                            "title": "Heading",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "title": "Text",
+                                            "type": "string"
+                                        },
+                                        "page_number": {
+                                            "title": "Page Number",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "clause_ref",
+                                        "heading",
+                                        "text",
+                                        "page_number"
+                                    ],
+                                    "title": "ClauseBlock",
+                                    "type": "object"
+                                },
+                                "title": "Clauses",
+                                "type": "array"
+                            },
+                            "extraction_method": {
+                                "title": "Extraction Method",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "doc_key",
+                            "clauses",
+                            "extraction_method"
+                        ],
+                        "title": "DocumentClauses",
+                        "type": "object"
+                    },
+                    "doc_b": {
+                        "properties": {
+                            "doc_key": {
+                                "title": "Doc Key",
+                                "type": "string"
+                            },
+                            "clauses": {
+                                "items": {
+                                    "properties": {
+                                        "clause_ref": {
+                                            "title": "Clause Ref",
+                                            "type": "string"
+                                        },
+                                        "heading": {
+                                            "title": "Heading",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "title": "Text",
+                                            "type": "string"
+                                        },
+                                        "page_number": {
+                                            "title": "Page Number",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "clause_ref",
+                                        "heading",
+                                        "text",
+                                        "page_number"
+                                    ],
+                                    "title": "ClauseBlock",
+                                    "type": "object"
+                                },
+                                "title": "Clauses",
+                                "type": "array"
+                            },
+                            "extraction_method": {
+                                "title": "Extraction Method",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "doc_key",
+                            "clauses",
+                            "extraction_method"
+                        ],
+                        "title": "DocumentClauses",
+                        "type": "object"
+                    },
+                    "mode": {
+                        "title": "Mode",
                         "type": "string"
+                    },
+                    "template_system_message": {
+                        "title": "Template System Message",
+                        "type": "string"
+                    },
+                    "linked_guideline_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "title": "Linked Guideline Ids",
+                        "type": "array"
+                    },
+                    "batch_size": {
+                        "default": 7,
+                        "title": "Batch Size",
+                        "type": "integer"
                     }
                 },
                 "required": [
-                    "topic"
+                    "doc_a",
+                    "doc_b",
+                    "mode",
+                    "template_system_message"
                 ]
             },
             "output": {
                 "type": "object",
                 "properties": {
-                    "report": {
-                        "title": "Report",
+                    "findings": {
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "title": "Id",
+                                    "type": "string"
+                                },
+                                "clause_ref": {
+                                    "title": "Clause Ref",
+                                    "type": "string"
+                                },
+                                "deviation_type": {
+                                    "enum": [
+                                        "high-risk",
+                                        "medium-risk",
+                                        "aligned",
+                                        "missing",
+                                        "modified",
+                                        "extra"
+                                    ],
+                                    "title": "Deviation Type",
+                                    "type": "string"
+                                },
+                                "snippet_a": {
+                                    "title": "Snippet A",
+                                    "type": "string"
+                                },
+                                "snippet_b": {
+                                    "default": "",
+                                    "title": "Snippet B",
+                                    "type": "string"
+                                },
+                                "explanation": {
+                                    "title": "Explanation",
+                                    "type": "string"
+                                },
+                                "guideline_citation": {
+                                    "default": "",
+                                    "title": "Guideline Citation",
+                                    "type": "string"
+                                },
+                                "insert_after_clause": {
+                                    "default": "",
+                                    "title": "Insert After Clause",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "clause_ref",
+                                "deviation_type",
+                                "snippet_a",
+                                "explanation"
+                            ],
+                            "title": "RawFinding",
+                            "type": "object"
+                        },
+                        "title": "Findings",
+                        "type": "array"
+                    },
+                    "mode": {
+                        "title": "Mode",
                         "type": "string"
                     }
                 },
                 "required": [
-                    "report"
+                    "findings",
+                    "mode"
                 ]
             },
             "graph": {
@@ -40,8 +222,8 @@
                         "metadata": {}
                     },
                     {
-                        "id": "generate_report",
-                        "name": "generate_report",
+                        "id": "compare",
+                        "name": "compare",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -57,11 +239,11 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "generate_report",
+                        "target": "compare",
                         "label": null
                     },
                     {
-                        "source": "generate_report",
+                        "source": "compare",
                         "target": "__end__",
                         "label": null
                     }
