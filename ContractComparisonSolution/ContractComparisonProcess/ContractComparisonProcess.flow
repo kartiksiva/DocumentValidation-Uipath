@@ -189,7 +189,7 @@
         "mode": "=js:$vars.start.output.mode",
         "findings": "=js:$vars.comparator.output.findings",
         "template_system_message": "=js:$vars.start.output.templateSystemMessage",
-        "task_id": "=js:$vars.hitlReview.output.taskId ?? 0"
+        "task_id": 0
       },
       "outputs": {
         "output": {
@@ -266,20 +266,20 @@
       "id": "e3",
       "source": "comparator",
       "sourcePort": "output",
-      "target": "hitlReview",
-      "targetPort": "input"
-    },
-    {
-      "id": "e4",
-      "source": "hitlReview",
-      "sourcePort": "completed",
       "target": "reviewer",
       "targetPort": "input"
     },
     {
-      "id": "e5",
+      "id": "e4",
       "source": "reviewer",
       "sourcePort": "output",
+      "target": "hitlReview",
+      "targetPort": "input"
+    },
+    {
+      "id": "e5",
+      "source": "hitlReview",
+      "sourcePort": "completed",
       "target": "routeDecision",
       "targetPort": "input"
     },
@@ -1739,13 +1739,13 @@
           "y": 300
         }
       },
-      "hitlReview": {
+      "reviewer": {
         "position": {
           "x": 800,
           "y": 300
         }
       },
-      "reviewer": {
+      "hitlReview": {
         "position": {
           "x": 1050,
           "y": 300

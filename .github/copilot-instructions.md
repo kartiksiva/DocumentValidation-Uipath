@@ -147,20 +147,270 @@ See `TODO.md` for the authoritative task list. T1–T13 are `[x]` complete. T14 
 
 > **Claude updates this section when assigning the next task. Implement only what is described here.**
 
-### All Plan A tasks complete (T1–T13)
+### PB-T7 — Guideline Indexer Agent
 
-The frontend implementation is done. Awaiting T14 (deploy) after infrastructure setup:
+**File:** `GuidelineIndexerSolution/guideline-indexer/main.py`  
+**Framework:** LangGraph (same pattern as extractor/comparator/reviewer)
 
-**Community Edition path:**
-1. Create Supabase tables: `contract_workspaces`, `templates`, `guidelines`
-2. Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local`
-3. Run `npm run build` then `uip codedapp pack/publish/deploy`
+---
 
-**Enterprise path:**
-1. Create entity types in UiPath Data Service: `ContractWorkspace`, `Template`, `Guideline`
-2. Add DataFabric scopes to `uipath.json` scope string
-3. Set `VITE_ENTITY_PROVIDER=uipath` in `.env.local`
-4. Run `npm run build` then `uip codedapp pack/publish/deploy`
+#### What it does
+
+Triggered from Plan A admin UI (user uploads a guideline PDF/DOCX → Maestro calls this agent). Takes a file from the `contract-workspaces` bucket (where Plan A uploaded it) and makes it searchable in the `contract-guidelines` Context Grounding index.
+
+---
+
+#### Input / Output (already defined in `schemas.py`)
+
+```python
+class IndexerInput(BaseModel):
+    bucket_name: str           # always 'contract-workspaces'
+    guideline_key: str         # bucket key of the PDF/DOCX (from Plan A upload)
+    guideline_id: str
+    guideline_name: str
+    context_grounding_index: str  # always 'contract-guidelines'
+
+class IndexerOutput(BaseModel):
+    guideline_id: str
+    chunk_count: int           # 0 if CG handles chunking; actual count if we chunk manually
+    status: str                # 'indexed'
+```
+
+---
+
+#### Graph nodes
+
+```
+download_guideline → upload_to_cg_bucket → return_status → END
+```
+
+1. **`download_guideline`** — download the PDF/DOCX from `contract-workspaces` bucket:
+   ```python
+   sdk = UiPath()
+   await sdk.buckets.download_async(
+       name=state.bucket_name,
+       blob_file_path=state.guideline_key,
+       destination_path=tmp_path,
+   )
+   ```
+
+2. **`upload_to_cg_bucket`** — upload the file to the `contract-guidelines` storage bucket (which backs the CG index — UiPath auto-indexes files added to this bucket):
+   ```python
+   cg_key = f"guidelines/{state.guideline_id}/{os.path.basename(state.guideline_key)}"
+   await sdk.buckets.upload_async(
+       name=state.context_grounding_index,   # 'contract-guidelines' bucket
+       blob_file_path=cg_key,
+       source_path=tmp_path,
+   )
+   ```
+   **Note:** The `contract-guidelines` CG index was pre-configured to auto-index from the `contract-guidelines` storage bucket (PB-T0). No explicit chunking code needed — the UiPath CG infrastructure handles it.
+
+3. **`return_status`** — return output:
+   ```python
+   return IndexerOutput(guideline_id=state.guideline_id, chunk_count=0, status="indexed")
+   ```
+   `chunk_count=0` is acceptable; CG chunking is opaque. Update if SDK exposes a count.
+
+---
+
+#### State model
+
+```python
+class IndexerState(IndexerInput):
+    tmp_path: str = ""
+    cg_key: str = ""
+```
+
+---
+
+#### Required patterns
+
+- **Always use `try/finally` to cleanup temp files** — same pattern as reviewer
+- **`UiPath()` called once per node that needs SDK** — don't store at module level
+- **Graph:** `StateGraph(IndexerState, input=IndexerInput, output=IndexerOutput)`
+- **`graph = builder.compile()`** at module level
+
+---
+
+#### Known limitation (no fix needed)
+
+Plan A creates the Guideline in Supabase with `indexingStatus='indexing'`. After this agent runs, the status in Supabase is NOT automatically updated to `'indexed'` — the agent doesn't have Supabase access. This is acceptable for now: the Supabase update will be triggered by a Maestro wrapper process (PB-T8). The `IndexerOutput` carries `status='indexed'` for the flow to act on.
+
+---
+
+#### Completion report
+
+Provide:
+1. `GuidelineIndexerSolution/guideline-indexer/main.py` content
+2. Commit hash
+
+No test run needed (PB-T7 verified at deploy time in PB-T8).
+
+---
+
+### [Archive] PB-T6 — Maestro Flow + Supporting Schema/Plan A Updates
+
+This task has 4 parts. Complete all 4. Run `npx tsc --noEmit` after the Plan A changes.
+
+---
+
+#### Part 1 — schemas.py: add `task_id` to `ReviewerInput`
+
+In `ContractComparisonSolution/schemas.py` (canonical), add one field to `ReviewerInput`:
+
+```python
+class ReviewerInput(BaseModel):
+    workspace_id: str
+    comparison_id: str
+    bucket_name: str
+    mode: str
+    findings: list[RawFinding]
+    template_system_message: str
+    task_id: int = 0  # passed from Maestro after CreateHumanTask
+```
+
+Then copy to all 4 agent dirs (surgical copy — only `ReviewerInput` changes):
+```bash
+cp ContractComparisonSolution/schemas.py ContractComparisonSolution/extractor/schemas.py
+cp ContractComparisonSolution/schemas.py ContractComparisonSolution/comparator/schemas.py
+cp ContractComparisonSolution/schemas.py ContractComparisonSolution/reviewer/schemas.py
+cp ContractComparisonSolution/schemas.py GuidelineIndexerSolution/guideline-indexer/schemas.py
+```
+
+---
+
+#### Part 2 — `reviewer/main.py` line 129: use `state.task_id`
+
+Change one line in `assemble_payload`:
+
+```python
+# BEFORE:
+task_id=0,  # Maestro patches this after CreateHumanTask
+
+# AFTER:
+task_id=state.task_id,
+```
+
+Remove the comment (stale now).
+
+---
+
+#### Part 3 — Plan A: pass template data to Maestro process
+
+**`src/lib/maestro.ts`** — add two fields to `StartComparisonInput`:
+
+```typescript
+export interface StartComparisonInput {
+  workspaceId: string;
+  bucketName: string;
+  docAKey: string;
+  docBKey: string;
+  mode: ComparisonMode;
+  templateId: string;
+  templateSystemMessage: string;   // ← new: template.systemMessage
+  linkedGuidelineIds: string[];    // ← new: template.linkedGuidelineIds
+  includeVersionHistory: boolean;
+  comparisonId: string;
+}
+```
+
+**`src/components/workspace/RunComparisonForm.tsx`** — look up selected template and pass its fields:
+
+```typescript
+// Inside handleRun(), after const comparisonId = uuidv4():
+const selectedTemplate = templates.find(t => t.id === templateId);
+await startComparison({
+  workspaceId: workspace.id,
+  bucketName: 'contract-workspaces',
+  docAKey: vA.bucketKey,
+  docBKey: vB.bucketKey,
+  mode,
+  templateId,
+  templateSystemMessage: selectedTemplate?.systemMessage ?? '',
+  linkedGuidelineIds: selectedTemplate?.linkedGuidelineIds ?? [],
+  includeVersionHistory: includeHistory,
+  comparisonId,
+});
+```
+
+Run `npx tsc --noEmit` — must be clean.
+
+---
+
+#### Part 4 — `ContractComparisonProcess.flow`: full flow implementation
+
+**Use the `@AGENTS.md` / uipath-maestro-flow skill docs for exact .flow JSON syntax.**
+
+Rewrite `ContractComparisonSolution/ContractComparisonProcess/ContractComparisonProcess.flow` with this topology. **All 3 agents are in the same solution — discover them with `uip maestro flow registry list --local --output json` and wire as sibling-agent resource nodes.**
+
+Flow inputs (from manual trigger / process start):
+```
+workspaceId, comparisonId, bucketName,
+docAKey, docBKey, mode,
+templateSystemMessage, linkedGuidelineIds
+```
+
+Nodes in order:
+
+1. **Manual trigger** (already exists — keep, add input schema)
+
+2. **CallExtractor** — call `extractor` agent  
+   Input mapping:
+   ```
+   bucket_name       ← bucketName
+   doc_a_key         ← docAKey
+   doc_b_key         ← docBKey
+   workspace_id      ← workspaceId
+   comparison_id     ← comparisonId
+   ```
+   Output stored as: `extractorOutput`
+
+3. **CallComparator** — call `comparator` agent  
+   Input mapping:
+   ```
+   doc_a                  ← extractorOutput.doc_a
+   doc_b                  ← extractorOutput.doc_b
+   mode                   ← mode
+   template_system_message ← templateSystemMessage
+   linked_guideline_ids   ← linkedGuidelineIds
+   ```
+   Output stored as: `comparatorOutput`
+
+4. **CreateHumanTask** — HITL node  
+   Task data: `{ comparisonId, workspaceId }`  
+   Output: `taskId` (integer)
+
+5. **CallReviewer** — call `reviewer` agent  
+   Input mapping:
+   ```
+   workspace_id            ← workspaceId
+   comparison_id           ← comparisonId
+   bucket_name             ← bucketName
+   mode                    ← mode
+   findings                ← comparatorOutput.findings
+   template_system_message ← templateSystemMessage
+   task_id                 ← taskId
+   ```
+   (Reviewer writes `review.json` to bucket with correct `taskId`)
+
+6. **WaitForHumanDecision** — suspend until HITL  
+   Output: `hitlAction` (the human's decision: Confirm or Reject)
+
+7. **CheckDecision** — condition branch on `hitlAction`  
+   - Confirmed → **End (success)**
+   - Rejected → **End (rejected)**
+
+**Validate:** `uip maestro flow validate --output json` must return no errors.
+
+---
+
+#### Completion report
+
+Provide:
+1. List of files modified
+2. `npx tsc --noEmit` output (Plan A)
+3. `uip maestro flow validate --output json` output
+4. Commit hash
 
 ---
 

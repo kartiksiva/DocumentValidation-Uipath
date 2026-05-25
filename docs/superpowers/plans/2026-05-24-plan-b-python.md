@@ -281,7 +281,7 @@ Return JSON: list of RawFinding
 3. `generate_narrative` — LLM writes plain-English business summary using `template_system_message`
 4. `assemble_payload` — build `ReviewPayload` with all fields
 5. `write_to_bucket` — upload `review.json` to `workspaces/{workspaceId}/comparisons/{comparisonId}/review.json`
-   - **Note:** `taskId` is set to `""` here; Maestro flow patches it after `CreateHumanTask`
+   - **Note:** `taskId` is set to `0` here; Maestro flow patches it after `CreateHumanTask`
 
 **Verify:** output `review.json` matches Plan A `ReviewPayload` schema exactly.
 

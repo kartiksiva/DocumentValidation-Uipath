@@ -51,8 +51,10 @@ Contract Comparison Agent — a UiPath Coded App (React + Vite) that lets busine
 
 - **Current status + task tracker:** `TODO.md` ← start here
 - **Plan A (Coded App / frontend):** `docs/superpowers/plans/2026-05-24-coded-app-plan.md`
-- **Plan B (Maestro + Agents / backend):** `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md`
+- **Plan B (Maestro + Agents / backend):** `docs/superpowers/plans/2026-05-24-plan-b-python.md` ← **active** (Python + Studio Web)
+- **Plan B (archived C# plan):** `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md` (Studio Web is Python-only — C# not supported)
 - **Design spec:** `docs/superpowers/specs/2026-05-23-contract-comparison-agent-design.md`
+- **Lessons learned:** `docs/findings.md` — 15 bugs fixed during Plan A; read before touching SDK/Vite/OAuth
 
 ## Commands
 
@@ -77,9 +79,9 @@ Coded App (React + Vite)           ← Plan A
 UiPath Platform Services
   Buckets · Tasks · Processes
   ↕ Maestro SDK
-ContractComparisonProcess          ← Plan B, Main.xaml
+ContractComparisonProcess.flow     ← Plan B (Studio Web, Python agents)
   Mode Router → Template Loader → Agent 1 → Agent 2 → Agent 3 → Human Task
-  ↕ Agent calls (C# Coded Workflows)
+  ↕ Agent calls (Python coded agents via uip + LangGraph)
 Storage & Knowledge
   Buckets · UiPath Context Grounding (RAG) · Assets
 ```
@@ -100,10 +102,11 @@ Required Supabase tables: `contract_workspaces`, `templates`, `guidelines` (snak
 ```bash
 VITE_ENTITY_PROVIDER=uipath
 ```
-Add DataFabric scopes to `uipath.json`:
+Add Data Fabric scope to `uipath.json`:
 ```json
-"scope": "OR.Buckets OR.Tasks OR.Jobs PIMS DataFabric.Schema.Read DataFabric.Data.Read DataFabric.Data.Write"
+"scope": "OR.Buckets OR.Tasks OR.Jobs PIMS DataService.Default offline_access"
 ```
+(`OR.Entities` doesn't exist; Data Fabric uses `DataService.Default` — see findings.md F-002)
 Required entity types in UiPath Data Service (Admin → Data Service): `ContractWorkspace`, `Template`, `Guideline`.
 
 ### Provider abstraction files
@@ -129,12 +132,12 @@ sdk.processes.start({ processName: 'ContractComparisonProcess', inputArguments: 
 workspaces/{workspaceId}/comparisons/{comparisonId}/review.json
 ```
 
-**`ReviewPayload` schema** (`src/types/review.ts` ↔ Plan B `GenerateReview.cs`):
+**`ReviewPayload` schema** (`src/types/review.ts` ↔ Plan B `reviewer/main.py`):
 - `findings[].deviationType`: `"high-risk" | "medium-risk" | "aligned" | "missing" | "modified" | "extra"`
 - `findings[].snippetA`: exact verbatim text — mark.js uses fuzzy DOM search on this
 - `findings[].insertAfterClause`: only on `missing` findings — UI renders dashed gap here
 - `scorecard[].status`: `"HIGH" | "MEDIUM" | "OK" | "MISSING" | "MODIFIED" | "EXTRA"`
-- `taskId`: populated by Main.xaml after `CreateHumanTask`, before storing `review.json`
+- `taskId`: `number` — populated by `ContractComparisonProcess.flow` after `CreateHumanTask`, before writing `review.json`
 
 ## Key SDK Patterns
 
@@ -143,16 +146,33 @@ workspaces/{workspaceId}/comparisons/{comparisonId}/review.json
 // Uses initPromise pattern to handle concurrent callers safely
 import { getSDK } from './lib/sdk';
 const sdk = await getSDK();
+// sdk.ts calls sdk.setMultiLogin() BEFORE sdk.initialize() — required to avoid OAuth error #218
 
 // Entity CRUD — always via entities.ts facade, never import providers directly
 import { listWorkspaces, createWorkspace } from './lib/entities';
 
 // Bucket key builder — use this, never hardcode paths
 import { buildBucketKey } from './lib/buckets';
+// Bucket folder ID is hardcoded as 2964547 (Shared folder) in initBuckets() — NOT from env var
+// Reason: VITE_UIPATH_* prefix is reserved by coded-apps-dev plugin (see findings.md F-004, F-015)
 
 // Human task polling — 5s interval via useTaskPolling hook
 import { useTaskPolling } from './hooks/useTaskPolling';
 ```
+
+## Coded App Critical Rules (from findings.md)
+
+Non-negotiable for any UiPath Coded App work:
+
+1. `vite.config.ts` must have `base: './'` — relative asset paths for sub-path deploy (F-008)
+2. `<BrowserRouter basename={getAppBase()}>` — never bare `<BrowserRouter>` (F-009)
+3. Call `sdk.setMultiLogin()` before `sdk.initialize()` — avoids OAuth error #218 (F-005)
+4. `baseUrl` in `uipath.json` must be org-specific: `https://cloud.uipath.com/<orgName>` (F-005)
+5. Never prefix custom env vars with `VITE_UIPATH_` — plugin intercepts all of them (F-015)
+6. Register **both** `localhost:5173` and the deployed URL in External App redirect URIs (F-006)
+7. Correct OAuth scopes: `OR.Buckets OR.Tasks OR.Jobs PIMS DataService.Default offline_access` (F-002)
+8. All `innerHTML` / mark.js injection must go through `DOMPurify.sanitize()` (F-013)
+9. `setInterval` in hooks must capture ID and call `clearInterval` in cleanup (F-014)
 
 ## UiPath Assets (Plan B)
 
@@ -163,6 +183,6 @@ All configurable thresholds live in Orchestrator Assets (Shared folder) — neve
 
 ## Deployment
 
-- Coded App: Cloud-only (UiPath Automation Cloud). Auth via OAuth injected by `@uipath/coded-apps-dev` at deploy time — no custom auth code.
-- `uipath.json` at root: clientId, scopes, organization, tenant, baseUrl. Fill before deploying.
-- Maestro processes publish from UiPath Studio → Orchestrator → deployed as unattended robots.
+- **Plan A (Coded App):** Deployed to `https://kartizpujinj.uipath.host/contractai` (Shared folder, pack `contractai.1.0.0.nupkg`). Auth via OAuth injected by `@uipath/coded-apps-dev` — no custom auth code. Both `http://localhost:5173` and the deployed URL must be registered in External App redirect URIs.
+- `uipath.json` at root: clientId, scopes, organization, tenant, baseUrl. Do not commit real credentials.
+- **Plan B (Maestro flow + Python agents):** Deploy via `uip solution upload` from Studio Web. Agents pack + publish from `ContractComparisonSolution/`. See `docs/superpowers/plans/2026-05-24-plan-b-python.md`.

@@ -126,7 +126,7 @@ async def assemble_payload(state: ReviewerState) -> dict:
         compliance_percent=state.compliance_percent,
         findings=findings,
         narrative=state.narrative,
-        task_id=state.task_id,  # passed in by Maestro flow after CreateHumanTask
+        task_id=state.task_id,
     )
     return {"payload": payload}
 
