@@ -1,4 +1,3 @@
-import asyncio
 import os
 import shutil
 import tempfile
@@ -19,9 +18,8 @@ class IndexerState(IndexerInput):
 
 
 async def download_doc(state: IndexerState) -> dict:
-    from uipath import UiPath
+    from uipath.platform import UiPath
     sdk = UiPath()
-    await sdk.initialize_async()
     tmp = tempfile.mkdtemp()
     dest = os.path.join(tmp, os.path.basename(state.guideline_key))
     await sdk.buckets.download_async(
@@ -45,32 +43,25 @@ def _extract_text(path: str) -> str:
 
 
 async def extract_text(state: IndexerState) -> dict:
-    text = await asyncio.to_thread(_extract_text, state.local_path)
+    text = _extract_text(state.local_path)
     return {"chunk_count": max(1, len(text) // CHARS_PER_CHUNK)}
 
 
 async def upload_to_index(state: IndexerState) -> dict:
-    from uipath import UiPath
+    from uipath.platform import UiPath
     sdk = UiPath()
-    await sdk.initialize_async()
     blob_path = f"guidelines/{state.guideline_id}/{os.path.basename(state.local_path)}"
-    await asyncio.to_thread(
-        sdk.context_grounding.add_to_index,
+    await sdk.context_grounding.add_to_index_async(
         name=state.context_grounding_index,
         blob_file_path=blob_path,
         source_path=state.local_path,
     )
-    index = await asyncio.to_thread(
-        sdk.context_grounding.retrieve,
-        name=state.context_grounding_index,
-    )
-    await asyncio.to_thread(sdk.context_grounding.ingest_data, index=index)
     return {"status": "indexed"}
 
 
 async def cleanup(state: IndexerState) -> dict:
     if state.tmp_dir and os.path.exists(state.tmp_dir):
-        await asyncio.to_thread(shutil.rmtree, state.tmp_dir, ignore_errors=True)
+        shutil.rmtree(state.tmp_dir, ignore_errors=True)
     return {}
 
 
