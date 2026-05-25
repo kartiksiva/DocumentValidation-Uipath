@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "28214a36-50dc-4467-827d-b8c0cb4637ac",
+            "uniqueId": "3560fe04-c258-4e3d-9d66-f10d80c68d9e",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -70,8 +70,29 @@
                         "metadata": {}
                     },
                     {
-                        "id": "index",
-                        "name": "index",
+                        "id": "download_doc",
+                        "name": "download_doc",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "extract_text",
+                        "name": "extract_text",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "upload_to_index",
+                        "name": "upload_to_index",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "cleanup",
+                        "name": "cleanup",
                         "type": "node",
                         "subgraph": null,
                         "metadata": {}
@@ -87,11 +108,26 @@
                 "edges": [
                     {
                         "source": "__start__",
-                        "target": "index",
+                        "target": "download_doc",
                         "label": null
                     },
                     {
-                        "source": "index",
+                        "source": "download_doc",
+                        "target": "extract_text",
+                        "label": null
+                    },
+                    {
+                        "source": "extract_text",
+                        "target": "upload_to_index",
+                        "label": null
+                    },
+                    {
+                        "source": "upload_to_index",
+                        "target": "cleanup",
+                        "label": null
+                    },
+                    {
+                        "source": "cleanup",
                         "target": "__end__",
                         "label": null
                     }
