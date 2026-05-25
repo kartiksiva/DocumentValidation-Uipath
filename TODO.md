@@ -60,8 +60,8 @@ Old C# plan: `docs/superpowers/plans/2026-05-24-maestro-agents-plan.md` (archive
 | `[x]` | **PB-T4** Comparator agent | `comparator/main.py` — clause pairing, batch RAG (ContextGroundingRetriever), structured LLM output per batch. Commit `8f3f692` |
 | `[x]` | **PB-T5** Reviewer agent | `reviewer/main.py` — scorecard (LLM), compliance%, narrative, ReviewPayload → bucket. Fixed `source_path=` (was `file_path=`). |
 | `[x]` | **PB-T6** Maestro flow | `ContractComparisonProcess.flow` 8-node flow. Fixed edge order: reviewer before HITL (so review.json exists when human acts). Plan A ConfirmBar gets taskId from polling by comparisonId (not from payload.taskId). |
-| `[~]` | **PB-T7** Guideline indexer agent | `guideline-indexer/main.py` — LangGraph, download from contract-workspaces, upload to contract-guidelines CG bucket |
-| `[ ]` | **PB-T8** Deploy + E2E | Deploy agents → pack+publish flow → test 5 E2E scenarios from spec |
+| `[x]` | **PB-T7** Guideline indexer agent | `guideline-indexer/main.py` — LangGraph, download from contract-workspaces, upload to contract-guidelines CG bucket |
+| `[x]` | **PB-T8** Deploy + E2E | Deploy agents → pack+publish flow → test 5 E2E scenarios from spec |
 
 ---
 
