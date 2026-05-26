@@ -1,16 +1,16 @@
 {
   "docVersion": "1.0.0",
   "resource": {
-    "name": "guideline-indexer",
+    "name": "ContractComparisonProcess",
     "kind": "process",
-    "type": "agent",
+    "type": "flow",
     "apiVersion": "orchestrator.uipath.com/v1",
-    "projectKey": "37dce6a9-2ae5-447e-9305-48d9da952a46",
+    "projectKey": "94b9cfc1-fb1f-4335-89d5-43fd40531bc7",
     "isOverridable": true,
     "dependencies": [
       {
         "kind": "package",
-        "name": "guideline-indexer"
+        "name": "ContractComparisonProcess"
       }
     ],
     "runtimeDependencies": [],
@@ -20,11 +20,12 @@
       }
     ],
     "spec": {
-      "type": "Agent",
-      "name": "guideline-indexer",
+      "type": "Flow",
+      "name": "ContractComparisonProcess",
       "package": {
-        "key": "765c12aa-fa04-47b0-82d7-0731e69fc01d"
+        "key": "69a94258-5856-40df-a009-8530b75f53ef"
       },
+      "packageName": "ContractComparisonSolution.flow.ContractComparisonProcess",
       "inputArguments": "{}",
       "targetFrameworkValue": "Portable",
       "retentionAction": "Delete",
@@ -33,7 +34,7 @@
       "staleRetentionPeriod": 180
     },
     "locks": [],
-    "key": "9a6ebd9b-8885-45fc-8659-c58851b4c076",
+    "key": "38ed9cfd-5c9f-4cb0-9c09-d04d020760bb",
     "files": []
   }
 }

@@ -6,6 +6,7 @@
     "type": "agent",
     "apiVersion": "orchestrator.uipath.com/v1",
     "projectKey": "07d70956-0499-4280-aea8-151a8decedba",
+    "isOverridable": true,
     "dependencies": [
       {
         "kind": "package",

@@ -5,6 +5,7 @@
     "kind": "package",
     "apiVersion": "orchestrator.uipath.com/v1",
     "projectKey": "2d3fae88-5450-4d1f-ba3a-613a010b6633",
+    "isOverridable": true,
     "dependencies": [],
     "runtimeDependencies": [],
     "folders": [

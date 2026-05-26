@@ -1,10 +1,10 @@
 {
   "docVersion": "1.0.0",
   "resource": {
-    "name": "reviewer",
+    "name": "ContractComparisonProcess",
     "kind": "package",
     "apiVersion": "orchestrator.uipath.com/v1",
-    "projectKey": "07d70956-0499-4280-aea8-151a8decedba",
+    "projectKey": "94b9cfc1-fb1f-4335-89d5-43fd40531bc7",
     "isOverridable": true,
     "dependencies": [],
     "runtimeDependencies": [],
@@ -14,10 +14,10 @@
       }
     ],
     "spec": {
-      "name": "reviewer"
+      "name": "ContractComparisonProcess"
     },
     "locks": [],
-    "key": "2d790cb9-d1ce-4568-8727-8b53d1a34e1d",
+    "key": "69a94258-5856-40df-a009-8530b75f53ef",
     "files": []
   }
 }
