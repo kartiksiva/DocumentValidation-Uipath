@@ -14,10 +14,13 @@ export interface StartComparisonInput {
   comparisonId: string;
 }
 
-export async function startComparison(input: StartComparisonInput, folderId = 0): Promise<void> {
+// Orchestrator folder ID for Shared/ContractComparisonSolution (deployed via uip solution deploy)
+const CONTRACT_COMPARISON_FOLDER_ID = 7890336;
+
+export async function startComparison(input: StartComparisonInput): Promise<void> {
   const sdk = await getSDK();
   await sdk.processes.start(
     { processName: 'ContractComparisonProcess', inputArguments: JSON.stringify(input) },
-    folderId
+    CONTRACT_COMPARISON_FOLDER_ID
   );
 }
